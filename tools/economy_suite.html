@@ -19,7 +19,11 @@
         .section-content { display: none; }
         .section-content.active { display: block; }
         input[type="number"], input[type="text"] {
-            background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 0.5rem; width: 100%; color: #fff;
+            background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 0.25rem 0.5rem; width: 100%; color: #fff; font-size: 0.75rem;
+        }
+        input[type="checkbox"] {
+            accent-color: #3b82f6;
+            width: 14px; height: 14px; cursor: pointer;
         }
         .card { background: var(--card); border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; }
         
@@ -40,14 +44,14 @@
 <body class="flex h-screen overflow-hidden">
 
     <!-- Sidebar Navigation -->
-    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0 z-20">
         <div class="p-6 border-b border-slate-800">
             <h1 class="text-xl font-bold text-blue-500 italic">SportStars</h1>
-            <p class="text-xs text-slate-500">Pro Balancing v2.8</p>
+            <p class="text-xs text-slate-500">Pro Balancing v3.2</p>
         </div>
         <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
             <button onclick="showSection('chapters')" class="nav-btn active w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-map w-5"></i> Chapters & Sim</button>
-            <button onclick="showSection('trainings')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-dumbbell w-5"></i> Trainings</button>
+            <button onclick="showSection('trainings')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-dumbbell w-5"></i> Trainings & Slots</button>
             <button onclick="showSection('scout')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-binoculars w-5"></i> Scout (Athletes)</button>
             <button onclick="showSection('managers')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-user-tie w-5"></i> Managers</button>
             <button onclick="showSection('shop')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-store w-5"></i> Shop & Gacha</button>
@@ -59,29 +63,33 @@
         </div>
     </aside>
 
-    <!-- Main Workspace -->
-    <main class="flex-grow overflow-y-auto p-8 bg-slate-950 scroll-smooth">
+    <!-- Main Content Split -->
+    <main class="flex flex-grow h-full overflow-hidden">
         
-        <!-- SECTION: CHAPTERS & REWARDS (Includes Sim) -->
-        <section id="chapters" class="section-content active space-y-6">
-             
-             <!-- Top Row: Config & Sim -->
-             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- 1. Reward Config -->
+        <!-- LEFT PANEL: CONFIGURATION -->
+        <div id="config-panel" class="w-1/2 h-full overflow-y-auto p-8 bg-slate-950 scroll-smooth border-r border-slate-800">
+            
+            <!-- SECTION: CHAPTERS & REWARDS -->
+            <section id="chapters" class="section-content active space-y-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Chapters & Progression</h2>
+                </div>
+                
+                <!-- Reward Config -->
                 <div class="card space-y-4">
                     <h3 class="font-bold border-b border-slate-700 pb-2">Stage Reward Config</h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label class="text-xs text-green-400 font-bold">Base Cash</label><input type="number" id="stage_cash_base" value="1200" onchange="updateCharts();saveConfig()"></div>
-                        <div><label class="text-xs text-green-400 font-bold">Cash Multiplier</label><input type="number" id="stage_cash_mult" value="2.5" step="0.1" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-green-400 font-bold">Base Cash</label><input type="number" id="stage_cash_base" value="2000" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-green-400 font-bold">Cash Multiplier</label><input type="number" id="stage_cash_mult" value="2.6" step="0.1" onchange="updateCharts();saveConfig()"></div>
                         <div><label class="text-xs text-yellow-400 font-bold">Base Fame</label><input type="number" id="stage_fame_base" value="100" onchange="updateCharts();saveConfig()"></div>
                         <div><label class="text-xs text-yellow-400 font-bold">Fame Growth</label><input type="number" id="stage_fame_growth" value="45" onchange="updateCharts();saveConfig()"></div>
                     </div>
                 </div>
 
-                <!-- 2. Progression Sim Visualization -->
+                <!-- Progression Sim Visualization -->
                 <div class="card border border-blue-500/30 bg-blue-900/10">
                     <h3 class="font-bold mb-4 flex justify-between items-center">
-                        <span>Progression Analysis</span>
+                        <span>Progression Analysis (Slots Inclusive)</span>
                         <span class="text-[10px] text-blue-300 bg-blue-900/50 px-2 py-1 rounded">LIVE PREVIEW</span>
                     </h3>
                     <div class="overflow-x-auto">
@@ -101,73 +109,39 @@
                     </div>
                     <p class="text-[10px] text-slate-400 mt-2 italic">* Buying Power = How many training levels 1 stage win buys.</p>
                 </div>
-            </div>
 
-            <!-- Bottom Row: Chapter Inputs -->
-            <h3 class="font-bold text-xl mt-4">Chapter Definitions</h3>
-            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="chapter-inputs">
-                <!-- Dynamically populated -->
-            </div>
-
-            <!-- Fame Chart -->
-            <div class="card">
-                 <h3 class="font-bold mb-2">Fame Accumulation Projection</h3>
-                 <div class="h-[150px]">
-                    <canvas id="fameChart"></canvas>
-                 </div>
-            </div>
-        </section>
-
-        <!-- SECTION: TRAININGS (Consolidated) -->
-        <section id="trainings" class="section-content space-y-6">
-            <div class="flex justify-between items-center">
-                <h2 class="text-2xl font-bold">Training Logic & Analysis</h2>
-                <div id="health-status" class="px-4 py-2 rounded-full text-xs font-bold bg-green-900 text-green-300 border border-green-500">
-                    STATUS: HEALTHY
+                <!-- Chapter Inputs -->
+                <h3 class="font-bold text-xl mt-4">Chapter Definitions</h3>
+                <div class="space-y-4" id="chapter-inputs">
+                    <!-- Dynamically populated -->
                 </div>
-            </div>
+            </section>
 
-            <!-- The Critical Metric: Time to Upgrade (Moved here) -->
-            <div class="card border-l-4 border-yellow-500">
-                <div class="flex justify-between items-start mb-4">
-                    <div>
-                        <h3 class="font-bold text-lg text-white">Time To Next Upgrade (The "Wall")</h3>
-                        <p class="text-xs text-slate-400">Formula: Cost / (IncomePerCycle / Duration). <br>Should trend UPWARD. If flat/down, game is broken.</p>
-                    </div>
+            <!-- SECTION: TRAININGS -->
+            <section id="trainings" class="section-content space-y-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold">Training Slots & Math</h2>
                 </div>
-                <div class="h-[300px]">
-                    <canvas id="timeToUpgradeChart"></canvas>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Global Math -->
                 <div class="card space-y-4">
-                    <h3 class="font-bold border-b border-slate-700 pb-2">Math Configs</h3>
-                    <div class="grid grid-cols-2 gap-4">
+                    <h3 class="font-bold border-b border-slate-700 pb-2">Global Math Configs</h3>
+                    <div class="grid grid-cols-3 gap-4">
                         <div><label class="text-xs text-slate-500">Cost Expo (Rec: 1.15)</label><input type="number" id="cost_expo" value="1.15" step="0.01" onchange="updateCharts();saveConfig()"></div>
                         <div><label class="text-xs text-slate-500">Income Expo (Rec: 1.09)</label><input type="number" id="income_expo" value="1.09" step="0.01" onchange="updateCharts();saveConfig()"></div>
                         <div><label class="text-xs text-slate-500">Dur Decay (Rec: 0.9973)</label><input type="number" id="dur_decay" value="0.9973" step="0.0001" onchange="updateCharts();saveConfig()"></div>
                     </div>
                 </div>
-                <div class="card">
-                    <h3 class="font-bold mb-4">Duration Decay</h3>
-                    <div class="h-[200px]">
-                        <canvas id="durationChart"></canvas>
-                    </div>
-                </div>
-                <div class="card col-span-1 md:col-span-2">
-                    <h3 class="font-bold mb-4">Cost vs Income (Raw Values)</h3>
-                    <div class="h-[350px]">
-                        <canvas id="trainingChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </section>
 
-        <!-- SECTION: SCOUT (Athletes) -->
-        <section id="scout" class="section-content space-y-6">
-            <h2 class="text-2xl font-bold mb-6">Scout & Athlete Recruitment</h2>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Slots Editor -->
+                <div id="slots-container" class="space-y-4">
+                    <!-- Populated by JS -->
+                </div>
+            </section>
+
+            <!-- SECTION: SCOUT -->
+            <section id="scout" class="section-content space-y-6">
+                <h2 class="text-2xl font-bold mb-6">Scout & Athlete Recruitment</h2>
                 <div class="card space-y-4">
                     <h3 class="font-bold border-b border-slate-700 pb-2">Pull Costs (Fame)</h3>
                     <div class="space-y-4">
@@ -185,46 +159,36 @@
                         </div>
                     </div>
                 </div>
-                <div class="card lg:col-span-2">
-                    <h3 class="font-bold mb-4">Cumulative Athlete Pulls</h3>
-                    <p class="text-xs text-slate-400 mb-4">Based on Cumulative Stage Fame / x1 Pull Cost. Shows pull potential per stage.</p>
-                    <div class="h-[300px]">
-                        <canvas id="scoutChart"></canvas>
+            </section>
+
+            <!-- SECTION: MANAGERS -->
+            <section id="managers" class="section-content space-y-6">
+                <h2 class="text-2xl font-bold mb-6">Manager Leveling</h2>
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="card p-4 bg-slate-900/50 rounded-xl border border-blue-500/20">
+                        <h4 class="font-bold text-blue-400 mb-2">Rare Cost Formula</h4>
+                        <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
+                        <input type="number" id="rare_mult" value="5" onchange="updateCharts();saveConfig()">
+                    </div>
+                    <div class="card p-4 bg-slate-900/50 rounded-xl border border-purple-500/20">
+                        <h4 class="font-bold text-purple-400 mb-2">Epic Cost Formula</h4>
+                        <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
+                        <input type="number" id="epic_mult" value="3" onchange="updateCharts();saveConfig()">
+                    </div>
+                    <div class="card p-4 bg-slate-900/50 rounded-xl border border-orange-500/20">
+                        <h4 class="font-bold text-orange-400 mb-2">Legend (Fixed)</h4>
+                        <p class="text-xs text-slate-500 mb-2">Fibonacci(Level)</p>
+                        <div class="text-xs mono text-orange-300 mt-2">1, 2, 3, 5, 8, 13...</div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <!-- SECTION: MANAGERS -->
-        <section id="managers" class="section-content space-y-6">
-            <h2 class="text-2xl font-bold mb-6">Manager Leveling</h2>
-            <div class="card grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="p-4 bg-slate-900/50 rounded-xl border border-blue-500/20">
-                    <h4 class="font-bold text-blue-400 mb-2">Rare</h4>
-                    <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
-                    <input type="number" id="rare_mult" value="5" onchange="updateCharts();saveConfig()">
-                </div>
-                <div class="p-4 bg-slate-900/50 rounded-xl border border-purple-500/20">
-                    <h4 class="font-bold text-purple-400 mb-2">Epic</h4>
-                    <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
-                    <input type="number" id="epic_mult" value="3" onchange="updateCharts();saveConfig()">
-                </div>
-                <div class="p-4 bg-slate-900/50 rounded-xl border border-orange-500/20">
-                    <h4 class="font-bold text-orange-400 mb-2">Legend (Fixed)</h4>
-                    <p class="text-xs text-slate-500 mb-2">Fibonacci(Level)</p>
-                    <div class="text-xs mono text-orange-300 mt-2">1, 2, 3, 5, 8, 13...</div>
-                </div>
-            </div>
-        </section>
-
-        <!-- SECTION: SHOP & MONETIZATION -->
-        <section id="shop" class="section-content space-y-6">
-            <h2 class="text-2xl font-bold mb-6">Shop & Gacha Economy</h2>
-            
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                <!-- Diamond Packs -->
+            <!-- SECTION: SHOP -->
+            <section id="shop" class="section-content space-y-6">
+                <h2 class="text-2xl font-bold mb-6">Shop & Gacha Economy</h2>
+                
                 <div class="card space-y-4">
-                    <h3 class="font-bold border-b border-slate-700 pb-2">Diamond Packs Configuration</h3>
+                    <h3 class="font-bold border-b border-slate-700 pb-2">Diamond Packs</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-800 text-slate-400">
@@ -235,9 +199,7 @@
                                     <th class="p-2 text-right">Bonus %</th>
                                 </tr>
                             </thead>
-                            <tbody id="diamond_packs_table" class="divide-y divide-slate-700">
-                                <!-- Populated by JS -->
-                            </tbody>
+                            <tbody id="diamond_packs_table" class="divide-y divide-slate-700"></tbody>
                         </table>
                     </div>
                     <div class="p-3 bg-slate-800 rounded text-center">
@@ -246,124 +208,143 @@
                     </div>
                 </div>
 
-                <!-- Chest Config -->
                 <div class="card space-y-4">
                     <h3 class="font-bold border-b border-slate-700 pb-2">Chest Balancing</h3>
-                    <div class="grid grid-cols-3 gap-4">
-                        <!-- Rare -->
-                        <div class="text-center p-3 border border-blue-900/50 rounded bg-slate-800/20">
-                            <h4 class="text-sm font-bold text-blue-400 mb-2">Rare Chest</h4>
-                            <div class="grid grid-cols-2 gap-2 text-left">
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block">Cost</label>
-                                    <input type="number" id="chest_rare_cost" value="150" class="w-full text-xs">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block">Cards</label>
-                                    <input type="number" id="chest_rare_cards" value="25" class="w-full text-xs">
-                                </div>
-                            </div>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="text-center p-3 border border-blue-900/50 rounded bg-slate-800/20 grid grid-cols-3 items-center">
+                            <h4 class="text-sm font-bold text-blue-400 text-left">Rare Chest</h4>
+                            <div><label class="text-[10px] text-slate-500">Cost</label><input type="number" id="chest_rare_cost" value="150"></div>
+                            <div><label class="text-[10px] text-slate-500">Cards</label><input type="number" id="chest_rare_cards" value="15"></div>
                         </div>
-                        <!-- Epic -->
-                        <div class="text-center p-3 border border-purple-900/50 rounded bg-slate-800/20">
-                            <h4 class="text-sm font-bold text-purple-400 mb-2">Epic Chest</h4>
-                            <div class="grid grid-cols-2 gap-2 text-left">
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block">Cost</label>
-                                    <input type="number" id="chest_epic_cost" value="450" class="w-full text-xs">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block">Cards</label>
-                                    <input type="number" id="chest_epic_cards" value="8" class="w-full text-xs">
-                                </div>
-                            </div>
+                        <div class="text-center p-3 border border-purple-900/50 rounded bg-slate-800/20 grid grid-cols-3 items-center">
+                            <h4 class="text-sm font-bold text-purple-400 text-left">Epic Chest</h4>
+                            <div><label class="text-[10px] text-slate-500">Cost</label><input type="number" id="chest_epic_cost" value="450"></div>
+                            <div><label class="text-[10px] text-slate-500">Cards</label><input type="number" id="chest_epic_cards" value="6"></div>
                         </div>
-                        <!-- Legend -->
-                        <div class="text-center p-3 border border-orange-900/50 rounded bg-slate-800/20">
-                            <h4 class="text-sm font-bold text-orange-400 mb-2">Legend Chest</h4>
-                            <div class="grid grid-cols-2 gap-2 text-left">
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block">Cost</label>
-                                    <input type="number" id="chest_legend_cost" value="1200" class="w-full text-xs">
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-slate-500 block">Cards</label>
-                                    <input type="number" id="chest_legend_cards" value="2" class="w-full text-xs">
-                                </div>
-                            </div>
+                        <div class="text-center p-3 border border-orange-900/50 rounded bg-slate-800/20 grid grid-cols-3 items-center">
+                            <h4 class="text-sm font-bold text-orange-400 text-left">Legend Chest</h4>
+                            <div><label class="text-[10px] text-slate-500">Cost</label><input type="number" id="chest_legend_cost" value="1200"></div>
+                            <div><label class="text-[10px] text-slate-500">Cards</label><input type="number" id="chest_legend_cards" value="2.5" step="0.1"></div>
                         </div>
                     </div>
                 </div>
+            </section>
+
+        </div>
+
+        <!-- RIGHT PANEL: CHARTS & ANALYSIS (Always Visible) -->
+        <div id="charts-panel" class="w-1/2 h-full overflow-y-auto p-8 bg-slate-900">
+            <h2 class="text-xl font-bold mb-6 text-white border-b border-slate-700 pb-2"><i class="fa fa-chart-pie mr-2 text-blue-500"></i>Analysis Dashboard</h2>
+            
+            <div class="space-y-8">
                 
-                <!-- Output Analysis -->
-                <div class="card xl:col-span-2">
-                    <h3 class="font-bold mb-4">Value Analysis (Based on Tier 1 Price)</h3>
+                <!-- Health Status -->
+                <div class="flex items-center justify-between bg-slate-800 p-4 rounded-lg">
+                    <span class="text-sm font-bold text-slate-400">Economy State</span>
+                    <div id="health-status" class="px-4 py-2 rounded-full text-xs font-bold bg-green-900 text-green-300 border border-green-500">
+                        STATUS: HEALTHY
+                    </div>
+                </div>
+
+                <!-- Time To Upgrade (Multi-Line) -->
+                <div class="card border-l-4 border-yellow-500 shadow-lg shadow-black/20">
+                    <div class="mb-4">
+                        <h3 class="font-bold text-lg text-white">Time To Next Upgrade (The Wall)</h3>
+                        <p class="text-xs text-slate-400">Lines show seconds needed to afford the next level for each training. Includes chapter durations and slot income.</p>
+                    </div>
+                    <div class="h-[350px]">
+                        <canvas id="timeToUpgradeChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Duration Decay -->
+                <div class="card shadow-lg shadow-black/20">
+                    <h3 class="font-bold mb-4 text-white">Duration Decay (% of Base)</h3>
+                    <div class="h-[200px]">
+                        <canvas id="durationChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Cost vs Income (Cardio Reference) -->
+                <div class="card shadow-lg shadow-black/20">
+                    <h3 class="font-bold mb-4 text-white">Cost vs Income (Cardio Baseline)</h3>
+                    <div class="h-[250px]">
+                        <canvas id="trainingChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Fame Accumulation -->
+                <div class="card shadow-lg shadow-black/20">
+                    <h3 class="font-bold mb-4 text-white">Cumulative Fame</h3>
+                    <div class="h-[200px]">
+                        <canvas id="fameChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Scout Pulls -->
+                <div class="card shadow-lg shadow-black/20">
+                    <h3 class="font-bold mb-4 text-white">Cumulative Athlete Pulls</h3>
+                    <div class="h-[200px]">
+                        <canvas id="scoutChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Shop Analysis -->
+                <div class="card shadow-lg shadow-black/20">
+                    <h3 class="font-bold mb-4 text-white">Shop Value Analysis</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-800 text-slate-400">
                                 <tr>
-                                    <th class="p-2">Chest Name</th>
-                                    <th class="p-2">Diamond Cost</th>
-                                    <th class="p-2">USD Cost (Base)</th>
+                                    <th class="p-2">Chest</th>
+                                    <th class="p-2">$$ Cost</th>
                                     <th class="p-2">$/Card</th>
-                                    <th class="p-2">Cards/$ (Value)</th>
-                                    <th class="p-2">Rec. Pricing</th>
+                                    <th class="p-2">Cards/$</th>
                                 </tr>
                             </thead>
-                            <tbody id="shop_analysis_table" class="divide-y divide-slate-700">
-                                <!-- JS Populated -->
-                            </tbody>
+                            <tbody id="shop_analysis_table" class="divide-y divide-slate-700"></tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        </section>
 
-        <!-- EXPORT MODAL -->
-        <div id="exportModal" class="fixed inset-0 bg-black/90 hidden z-50 items-center justify-center p-4 md:p-8">
-            <div class="bg-slate-900 w-full max-w-4xl rounded-2xl border border-slate-700 flex flex-col h-[85vh]">
-                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                    <h3 class="font-bold text-green-400 flex items-center gap-2">
-                        <i class="fa fa-file-code"></i> Exported Economy Balance (YAML)
-                    </h3>
-                    <button onclick="closeExport()" class="text-slate-400 hover:text-white p-2 transition-colors">
-                        <i class="fa fa-times text-xl"></i>
-                    </button>
-                </div>
-                <textarea id="yamlOutput" class="flex-grow p-6 mono text-xs bg-slate-950 text-green-400 outline-none resize-none" readonly spellcheck="false"></textarea>
-                <div class="p-4 border-t border-slate-700 flex justify-between items-center">
-                    <p class="text-xs text-slate-500">Copy this into your game's config loader.</p>
-                    <button onclick="copyToClipboard()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold transition-colors">Copy to Clipboard</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- IMPORT MODAL -->
-        <div id="importModal" class="fixed inset-0 bg-black/90 hidden z-50 items-center justify-center p-4 md:p-8">
-            <div class="bg-slate-900 w-full max-w-2xl rounded-2xl border border-slate-700 flex flex-col h-[60vh]">
-                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
-                    <h3 class="font-bold text-blue-400 flex items-center gap-2">
-                        <i class="fa fa-file-import"></i> Import YAML Config
-                    </h3>
-                    <button onclick="closeImport()" class="text-slate-400 hover:text-white p-2 transition-colors">
-                        <i class="fa fa-times text-xl"></i>
-                    </button>
-                </div>
-                <textarea id="yamlInput" class="flex-grow p-6 mono text-xs bg-slate-950 text-slate-300 outline-none resize-none" placeholder="Paste your exported YAML here..." spellcheck="false"></textarea>
-                <div class="p-4 border-t border-slate-700 flex justify-end gap-3">
-                    <button onclick="closeImport()" class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
-                    <button onclick="parseAndImport()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold transition-colors">Import & Update</button>
-                </div>
             </div>
         </div>
 
     </main>
 
-    <script>
-        // --- STORAGE KEY ---
-        const STORAGE_KEY = 'sportstars_config_v2_8';
+    <!-- MODALS -->
+    <div id="exportModal" class="fixed inset-0 bg-black/90 hidden z-50 items-center justify-center p-4 md:p-8">
+        <div class="bg-slate-900 w-full max-w-4xl rounded-2xl border border-slate-700 flex flex-col h-[85vh]">
+            <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold text-green-400 flex items-center gap-2">Export YAML</h3>
+                <button onclick="closeExport()" class="text-slate-400 hover:text-white p-2"><i class="fa fa-times text-xl"></i></button>
+            </div>
+            <textarea id="yamlOutput" class="flex-grow p-6 mono text-xs bg-slate-950 text-green-400 outline-none resize-none" readonly></textarea>
+            <div class="p-4 border-t border-slate-700 flex justify-between items-center">
+                <p class="text-xs text-slate-500">Copy this into your game's config loader.</p>
+                <button onclick="copyToClipboard()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold">Copy</button>
+            </div>
+        </div>
+    </div>
 
-        // Core State
+    <div id="importModal" class="fixed inset-0 bg-black/90 hidden z-50 items-center justify-center p-4 md:p-8">
+        <div class="bg-slate-900 w-full max-w-2xl rounded-2xl border border-slate-700 flex flex-col h-[60vh]">
+            <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold text-blue-400 flex items-center gap-2">Import YAML</h3>
+                <button onclick="closeImport()" class="text-slate-400 hover:text-white p-2"><i class="fa fa-times text-xl"></i></button>
+            </div>
+            <textarea id="yamlInput" class="flex-grow p-6 mono text-xs bg-slate-950 text-slate-300 outline-none resize-none" placeholder="Paste YAML here..."></textarea>
+            <div class="p-4 border-t border-slate-700 flex justify-end gap-3">
+                <button onclick="closeImport()" class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                <button onclick="parseAndImport()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold">Import</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'sportstars_config_v3_2';
+
+        // --- DATA MODEL ---
         const state = {
             chapters: [
                 { id: 1, stages: 5, cap: 20, dur: 6, pulls: "6-10" },
@@ -373,7 +354,6 @@
                 { id: 5, stages: 10, cap: 240, dur: 120, pulls: "150-180" },
                 { id: 6, stages: 10, cap: 300, dur: 120, pulls: "200+" }
             ],
-            // Default Packs
             packs: [
                 { price: 0.99, amount: 100 },
                 { price: 4.99, amount: 550 },
@@ -382,10 +362,43 @@
                 { price: 49.99, amount: 6500 },
                 { price: 99.99, amount: 14000 }
             ],
-            // Simplified "Unlocked Training" model per chapter for Simulation
-            trainingBaseCosts: [10, 1000, 10000, 100000, 1000000, 5000000],
+            // Updated Defaults: Higher base upgrades to offset 4x income slots
+            trainings: [
+                { id: 'cardio', name: 'Cardio', baseUpgrade: 30, color: '#ef4444', slots: [
+                    { unlock: 0, income: 40, checked: true }, { unlock: 750, income: 150, checked: true }, { unlock: 3000, income: 600, checked: true }, { unlock: 12000, income: 2400, checked: true }
+                ]},
+                { id: 'dodging', name: 'Dodging', baseUpgrade: 300, color: '#f97316', slots: [
+                    { unlock: 100, income: 200, checked: true }, { unlock: 4000, income: 800, checked: true }, { unlock: 16000, income: 3200, checked: true }, { unlock: 64000, income: 12800, checked: true }
+                ]},
+                { id: 'curl', name: 'Curl', baseUpgrade: 3000, color: '#eab308', slots: [
+                    { unlock: 25000, income: 2500, checked: true }, { unlock: 150000, income: 10000, checked: true }, { unlock: 1000000, income: 40000, checked: true }, { unlock: 5000000, income: 160000, checked: true }
+                ]},
+                { id: 'throwing', name: 'Throwing', baseUpgrade: 30000, color: '#22c55e', slots: [
+                    { unlock: 5000000, income: 18000, checked: true }, { unlock: 50000000, income: 72000, checked: true }, { unlock: 500000000, income: 280000, checked: true }, { unlock: 5000000000, income: 1100000, checked: true }
+                ]},
+                { id: 'chess', name: 'Chess', baseUpgrade: 300000, color: '#06b6d4', slots: [
+                    { unlock: 200000000, income: 140000, checked: true }, { unlock: 2000000000, income: 560000, checked: true }, { unlock: 20000000000, income: 2200000, checked: true }, { unlock: 200000000000, income: 8800000, checked: true }
+                ]},
+                { id: 'pingpong', name: 'Pingpong', baseUpgrade: 3000000, color: '#3b82f6', slots: [
+                    { unlock: 1000000000, income: 1200000, checked: true }, { unlock: 10000000000, income: 4800000, checked: true }, { unlock: 100000000000, income: 19000000, checked: true }, { unlock: 1000000000000, income: 76000000, checked: true }
+                ]},
+                { id: 'slamming', name: 'Slamming', baseUpgrade: 15000000, color: '#a855f7', slots: [
+                    { unlock: 50000000000, income: 8000000, checked: true }, { unlock: 500000000000, income: 32000000, checked: true }, { unlock: 5000000000000, income: 128000000, checked: true }, { unlock: 50000000000000, income: 512000000, checked: true }
+                ]}
+            ],
             charts: {}
         };
+
+        // --- INIT & NAVIGATION ---
+        function init() {
+            loadConfig();
+            renderChapterInputs();
+            renderTrainingInputs();
+            renderPacksTable();
+            updateCharts();
+            updateShop();
+            document.querySelectorAll('input').forEach(i => i.addEventListener('change', saveConfig));
+        }
 
         function showSection(id) {
             document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
@@ -398,8 +411,7 @@
                     btn.classList.add('active');
                 }
             });
-            updateCharts();
-            updateShop();
+            // No updateCharts() needed here as right panel is persistent
         }
 
         function syncInputs(targetId, val) {
@@ -410,78 +422,7 @@
             }
         }
 
-        function init() {
-            // Attempt load from storage first
-            loadConfig();
-
-            renderChapterInputs();
-            renderPacksTable();
-            updateCharts();
-            updateShop();
-            
-            // Listeners for auto-save on SHOP specific inputs
-            document.querySelectorAll('#shop input').forEach(i => i.addEventListener('input', () => {
-                updateShop();
-                saveConfig();
-            }));
-        }
-
-        // --- STORAGE LOGIC ---
-        function saveConfig() {
-            const config = {
-                chapters: state.chapters,
-                packs: state.packs,
-                inputs: {
-                    cost_expo: document.getElementById('cost_expo').value,
-                    income_expo: document.getElementById('income_expo').value,
-                    dur_decay: document.getElementById('dur_decay').value,
-                    stage_cash_base: document.getElementById('stage_cash_base').value,
-                    stage_cash_mult: document.getElementById('stage_cash_mult').value,
-                    stage_fame_base: document.getElementById('stage_fame_base').value,
-                    stage_fame_growth: document.getElementById('stage_fame_growth').value,
-                    rare_mult: document.getElementById('rare_mult').value,
-                    epic_mult: document.getElementById('epic_mult').value,
-                    chest_rare_cost: document.getElementById('chest_rare_cost').value,
-                    chest_rare_cards: document.getElementById('chest_rare_cards').value,
-                    chest_epic_cost: document.getElementById('chest_epic_cost').value,
-                    chest_epic_cards: document.getElementById('chest_epic_cards').value,
-                    chest_legend_cost: document.getElementById('chest_legend_cost').value,
-                    chest_legend_cards: document.getElementById('chest_legend_cards').value,
-                    scout_x1: document.getElementById('scout_x1').value,
-                    scout_x10: document.getElementById('scout_x10').value,
-                    scout_x40: document.getElementById('scout_x40').value
-                }
-            };
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-        }
-
-        function loadConfig() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (!saved) return;
-
-            try {
-                const config = JSON.parse(saved);
-                if (config.chapters) state.chapters = config.chapters;
-                if (config.packs) state.packs = config.packs;
-                
-                if (config.inputs) {
-                    for (const [id, val] of Object.entries(config.inputs)) {
-                        const el = document.getElementById(id);
-                        if (el) el.value = val;
-                    }
-                }
-            } catch (e) {
-                console.error("Failed to load config", e);
-            }
-        }
-
-        function resetConfig() {
-            if(confirm("Reset all balancing to default values? This cannot be undone.")) {
-                localStorage.removeItem(STORAGE_KEY);
-                location.reload();
-            }
-        }
-
+        // --- RENDERING UI ---
         function renderChapterInputs() {
             const container = document.getElementById('chapter-inputs');
             container.innerHTML = ''; 
@@ -508,33 +449,61 @@
                 container.appendChild(div);
             });
         }
-        
-        function renderPacksTable() {
-            const tbody = document.getElementById('diamond_packs_table');
-            tbody.innerHTML = '';
-            
-            const baseRatio = state.packs[0].amount / state.packs[0].price;
 
-            state.packs.forEach((p, i) => {
-                const currentRatio = p.amount / p.price;
-                const bonus = ((currentRatio - baseRatio) / baseRatio) * 100;
-                
-                const row = `
-                    <tr>
-                        <td class="p-2 text-slate-300 font-bold">Tier ${i + 1}</td>
-                        <td class="p-2"><input type="number" step="0.01" class="w-20 bg-slate-900 border border-slate-700 rounded px-1" value="${p.price}" onchange="updatePack(${i}, 'price', this.value)"></td>
-                        <td class="p-2"><input type="number" class="w-20 bg-slate-900 border border-slate-700 rounded px-1" value="${p.amount}" onchange="updatePack(${i}, 'amount', this.value)"></td>
-                        <td class="p-2 text-right text-green-400 font-mono text-[10px]">${i === 0 ? '-' : '+' + bonus.toFixed(1) + '%'}</td>
-                    </tr>
+        function renderTrainingInputs() {
+            const container = document.getElementById('slots-container');
+            container.innerHTML = '';
+            
+            state.trainings.forEach((t, tIdx) => {
+                let slotsHtml = '';
+                t.slots.forEach((s, sIdx) => {
+                    slotsHtml += `
+                        <div class="bg-slate-900/50 p-2 rounded border border-slate-800 text-center relative">
+                            <div class="absolute top-1 right-1">
+                                <input type="checkbox" ${s.checked ? 'checked' : ''} onchange="toggleSlot(${tIdx}, ${sIdx})">
+                            </div>
+                            <div class="text-[10px] font-bold text-slate-400 mb-1">Slot ${sIdx + 1}</div>
+                            <label class="text-[8px] text-slate-500 block">Unlock Cost</label>
+                            <input type="number" class="mb-1 text-center" placeholder="Unlock" value="${s.unlock}" onchange="updateSlot(${tIdx}, ${sIdx}, 'unlock', this.value)">
+                            <label class="text-[8px] text-green-500 block">Cash/Cycle</label>
+                            <input type="number" class="text-center text-green-400 font-bold" placeholder="Base" value="${s.income}" onchange="updateSlot(${tIdx}, ${sIdx}, 'income', this.value)">
+                        </div>
+                    `;
+                });
+
+                const html = `
+                    <div class="card border border-slate-700">
+                        <div class="flex justify-between items-center mb-2 border-b border-slate-700 pb-2">
+                            <h4 class="font-bold" style="color:${t.color}">${t.name}</h4>
+                            <div class="flex items-center gap-2">
+                                <label class="text-[10px] text-slate-500">Base Upgrade Cost ($):</label>
+                                <input type="number" class="w-24 text-xs font-mono text-red-300" value="${t.baseUpgrade}" onchange="updateTrainingBase(${tIdx}, this.value)">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2">
+                            ${slotsHtml}
+                        </div>
+                    </div>
                 `;
-                tbody.innerHTML += row;
+                container.innerHTML += html;
             });
         }
+
+        function updateSlot(tIdx, sIdx, field, val) {
+            state.trainings[tIdx].slots[sIdx][field] = parseFloat(val);
+            updateCharts();
+            saveConfig();
+        }
         
-        function updatePack(index, field, value) {
-            state.packs[index][field] = parseFloat(value);
-            renderPacksTable(); // Re-render to update bonus calcs
-            updateShop(); // Re-calc valuations
+        function toggleSlot(tIdx, sIdx) {
+            state.trainings[tIdx].slots[sIdx].checked = !state.trainings[tIdx].slots[sIdx].checked;
+            updateCharts();
+            saveConfig();
+        }
+
+        function updateTrainingBase(tIdx, val) {
+            state.trainings[tIdx].baseUpgrade = parseFloat(val);
+            updateCharts();
             saveConfig();
         }
 
@@ -542,50 +511,52 @@
         function runSimulation(costExpo, stageCashBase, stageCashMult) {
             const tbody = document.getElementById('sim-table');
             tbody.innerHTML = '';
-            
             let globalStageIdx = 0;
-            let currentLevel = 0; // The level player starts the chapter at
+            let currentLevel = 0; 
 
             state.chapters.forEach((ch, chIdx) => {
-                // 1. Calculate Buying Power (Incentive Check)
-                // We use the MOST EXPENSIVE unlocked training as the benchmark for "buying levels"
-                const bestTrainingBase = state.trainingBaseCosts[chIdx] || state.trainingBaseCosts[state.trainingBaseCosts.length-1];
-                
-                // Cost to buy 1 level at the START of this chapter (currentLevel)
-                const costOfOneLevel = bestTrainingBase * Math.pow(costExpo, currentLevel);
-                
-                // Average Stage Reward for this chapter
+                const maxSlotsAllowed = ch.id === 1 ? 2 : (ch.id === 2 ? 3 : 4);
+                let totalChapterCost = 0;
+                let activeTrainings = [];
+                // Simple assumption: Trainings unlock based on array index ~ chapter
+                if (ch.id === 1) activeTrainings = [0, 1];
+                else if (ch.id === 2) activeTrainings = [0, 1, 2];
+                else if (ch.id === 3) activeTrainings = [0, 1, 2, 3];
+                else if (ch.id === 4) activeTrainings = [0, 1, 2, 3, 4];
+                else activeTrainings = [0, 1, 2, 3, 4, 5, 6];
+
+                activeTrainings.forEach(tIdx => {
+                    const t = state.trainings[tIdx];
+                    for (let l = currentLevel; l < ch.cap; l++) {
+                        totalChapterCost += t.baseUpgrade * Math.pow(costExpo, l);
+                    }
+                    for(let s=0; s < maxSlotsAllowed; s++) {
+                        let shouldCountCost = false;
+                        if (ch.id === 1 && s < 2) shouldCountCost = true; 
+                        if (ch.id === 2 && s === 2) shouldCountCost = true; 
+                        if (ch.id >= 3 && s === 3) shouldCountCost = true; 
+                        if (shouldCountCost) totalChapterCost += t.slots[s].unlock;
+                    }
+                });
+
+                // Buying Power: Benchmark against Training 0 (Cardio) Base Cost at current level
+                const t0 = state.trainings[0];
+                const costOfOneLevel = t0.baseUpgrade * Math.pow(costExpo, currentLevel);
                 const firstStageReward = stageCashBase * Math.pow(stageCashMult, globalStageIdx);
                 const levelsBuyable = firstStageReward / costOfOneLevel;
-                
-                // 2. Calculate Total Chapter Metrics
-                let totalChapterCost = 0;
-                // Sum cost for ALL unlocked trainings to reach new cap
-                for (let t = 0; t <= chIdx; t++) {
-                    const base = state.trainingBaseCosts[t] || 10;
-                    for (let l = currentLevel; l < ch.cap; l++) {
-                        totalChapterCost += base * Math.pow(costExpo, l);
-                    }
-                }
-                
+
                 let totalChapterRewards = 0;
                 for (let s = 0; s < ch.stages; s++) {
-                    const reward = stageCashBase * Math.pow(stageCashMult, globalStageIdx);
-                    totalChapterRewards += reward;
+                    totalChapterRewards += stageCashBase * Math.pow(stageCashMult, globalStageIdx);
                     globalStageIdx++;
                 }
 
-                // 3. Status
                 const isSurplus = totalChapterRewards >= totalChapterCost;
                 const statusHtml = isSurplus 
                     ? `<span class="text-green-400 font-bold"><i class="fa fa-check-circle"></i> Surplus</span>`
                     : `<span class="text-red-400 font-bold"><i class="fa fa-clock"></i> Deficit</span>`;
                 
-                // 4. Color Code Buying Power
-                let powerColor = "text-slate-400";
-                if (levelsBuyable > 5) powerColor = "text-green-400 font-bold";
-                else if (levelsBuyable > 1) powerColor = "text-yellow-400 font-bold";
-                else powerColor = "text-red-400 font-bold";
+                let powerColor = levelsBuyable > 5 ? "text-green-400 font-bold" : (levelsBuyable > 1 ? "text-yellow-400" : "text-red-400");
 
                 const row = `
                     <tr class="hover:bg-slate-800/50">
@@ -596,101 +567,73 @@
                     </tr>
                 `;
                 tbody.innerHTML += row;
-                
-                // Update level for next loop
                 currentLevel = ch.cap;
             });
         }
 
-        // --- SHOP LOGIC ---
-        function updateShop() {
-            // Use Tier 1 as the Base Valuation
-            const basePack = state.packs[0];
-            const valPerDiamond = basePack.price / basePack.amount;
-
-            document.getElementById('diamond_value_base').innerText = `$${valPerDiamond.toFixed(4)}`;
-
-            const chests = [
-                { name: "Rare", costId: 'chest_rare_cost', cardId: 'chest_rare_cards' },
-                { name: "Epic", costId: 'chest_epic_cost', cardId: 'chest_epic_cards' },
-                { name: "Legend", costId: 'chest_legend_cost', cardId: 'chest_legend_cards' }
-            ];
-
-            const tbody = document.getElementById('shop_analysis_table');
-            tbody.innerHTML = '';
-
-            chests.forEach(c => {
-                const cost = parseFloat(document.getElementById(c.costId).value);
-                const cards = parseFloat(document.getElementById(c.cardId).value);
-                const usdCost = cost * valPerDiamond;
-                const dollarPerCard = usdCost / cards;
-                const cardsPerDollar = cards / usdCost;
-                
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="p-2 font-bold ${c.name === 'Legend' ? 'text-orange-400' : 'text-slate-200'}">${c.name}</td>
-                        <td class="p-2 text-mono text-blue-300 font-bold">${cost} 💎</td>
-                        <td class="p-2 text-mono">$${usdCost.toFixed(2)}</td>
-                        <td class="p-2 text-mono font-bold">$${dollarPerCard.toFixed(2)}</td>
-                        <td class="p-2 text-mono text-green-400 font-bold">${cardsPerDollar.toFixed(2)}</td>
-                        <td class="p-2 text-slate-500 italic">Target: $${(usdCost * 0.9).toFixed(2)} - $${(usdCost * 1.1).toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-        }
-
+        // --- CHARTS & LOGIC ---
         function updateCharts() {
             const costExpo = parseFloat(document.getElementById('cost_expo').value) || 1.15;
             const incomeExpo = parseFloat(document.getElementById('income_expo').value) || 1.09;
             const durDecay = parseFloat(document.getElementById('dur_decay').value) || 0.9973;
-            
-            const stageCashBase = parseFloat(document.getElementById('stage_cash_base').value) || 1200;
-            const stageCashMult = parseFloat(document.getElementById('stage_cash_mult').value) || 2.5; // Updated default
-            const stageFameBase = parseFloat(document.getElementById('stage_fame_base').value) || 100;
-            const stageFameGrowth = parseFloat(document.getElementById('stage_fame_growth').value) || 45;
-            
-            // Scout inputs
             const scoutX1 = parseFloat(document.getElementById('scout_x1').value) || 100;
+            const stageCashBase = parseFloat(document.getElementById('stage_cash_base').value);
+            const stageCashMult = parseFloat(document.getElementById('stage_cash_mult').value);
+            const stageFameBase = parseFloat(document.getElementById('stage_fame_base').value);
+            const stageFameGrowth = parseFloat(document.getElementById('stage_fame_growth').value);
 
-            // Health Check
-            const healthEl = document.getElementById('health-status');
-            if (incomeExpo >= costExpo) {
-                healthEl.className = "px-4 py-2 rounded-full text-xs font-bold bg-red-900 text-red-300 border border-red-500 warning-pulse";
-                healthEl.innerHTML = "CRITICAL: INCOME > COST";
-            } else {
-                healthEl.className = "px-4 py-2 rounded-full text-xs font-bold bg-green-900 text-green-300 border border-green-500";
-                healthEl.innerHTML = "STATUS: HEALTHY";
-            }
-
-            // Run Simulation
             runSimulation(costExpo, stageCashBase, stageCashMult);
 
-            // Chart Data Generation
+            // 1. Time To Upgrade (Multi-Line for 7 Trainings)
             const trLabels = Array.from({length: 61}, (_, i) => i * 5); 
-            const trCosts = trLabels.map(l => 10 * Math.pow(costExpo, Math.max(0, l-1)));
-            const baseDur = 7; 
-            const trIncomesPerSec = trLabels.map(l => {
-                const inc = 40 * Math.pow(incomeExpo, Math.max(0, l-1));
-                const dur = baseDur * Math.pow(durDecay, Math.max(0, l-1));
+            const ttuDatasets = [];
+            
+            // Map training index to Chapter index for Base Duration
+            // T0, T1 -> Ch0 (id1). T2 -> Ch1. T3 -> Ch2. T4 -> Ch3. T5 -> Ch4. T6 -> Ch5.
+            const tToChMap = [0, 0, 1, 2, 3, 4, 5]; 
+
+            state.trainings.forEach((t, tIdx) => {
+                const chIdx = tToChMap[tIdx];
+                const baseDur = state.chapters[chIdx].dur; // Use specific chapter duration!
+                
+                // Calculate Income sum of checked slots
+                const activeSlotIncome = t.slots.reduce((sum, s) => s.checked ? sum + s.income : sum, 0);
+                
+                if(activeSlotIncome > 0) {
+                    const data = trLabels.map(l => {
+                        const cost = t.baseUpgrade * Math.pow(costExpo, Math.max(0, l-1));
+                        const inc = activeSlotIncome * Math.pow(incomeExpo, Math.max(0, l-1));
+                        const dur = baseDur * Math.pow(durDecay, Math.max(0, l-1));
+                        const incPerSec = inc / Math.max(0.1, dur);
+                        return cost / incPerSec;
+                    });
+                    ttuDatasets.push({ label: t.name, data: data, color: t.color });
+                }
+            });
+            renderLineChart('timeToUpgradeChart', trLabels, ttuDatasets, true);
+
+            // 2. Cardio Specific Cost/Income (Reference)
+            const t0 = state.trainings[0];
+            const t0Cost = trLabels.map(l => t0.baseUpgrade * Math.pow(costExpo, Math.max(0, l-1)));
+            const t0Income = t0.slots.reduce((sum, s) => s.checked ? sum + s.income : sum, 0);
+            const t0BaseDur = state.chapters[0].dur;
+            const t0IncPerSec = trLabels.map(l => {
+                const inc = t0Income * Math.pow(incomeExpo, Math.max(0, l-1));
+                const dur = t0BaseDur * Math.pow(durDecay, Math.max(0, l-1));
                 return inc / Math.max(0.1, dur);
             });
-            const timeToUpgrade = trCosts.map((c, i) => c / trIncomesPerSec[i]);
-
             renderLineChart('trainingChart', trLabels, [
-                { label: 'Upgrade Cost', data: trCosts, color: '#ef4444' },
-                { label: 'Income / Sec', data: trIncomesPerSec, color: '#22c55e' }
+                { label: 'Cardio Upgrade Cost', data: t0Cost, color: '#ef4444' },
+                { label: 'Cardio Income/Sec', data: t0IncPerSec, color: '#22c55e' }
             ], true);
 
-            renderLineChart('timeToUpgradeChart', trLabels, [
-                { label: 'Seconds to Afford Next Level', data: timeToUpgrade, color: '#eab308' }
-            ], true);
-
+            // 3. Duration Decay
             const durValues = trLabels.map(l => 100 * Math.pow(durDecay, Math.max(0, l-1)));
             renderLineChart('durationChart', trLabels, [
-                { label: '% of Level 1 Duration', data: durValues, color: '#3b82f6' }
+                { label: '% of Base Duration', data: durValues, color: '#3b82f6' }
             ], false);
 
-            // Fame & Scout Projection with Inputs
+            // 4. Fame & Scout
             let globalIdx = 0;
             let totalFame = 0;
             const fameLabels = [];
@@ -706,221 +649,122 @@
                 }
             });
             renderBarChart('fameChart', fameLabels, fameValues, 'Cumulative Fame', '#3b82f6');
-            renderBarChart('scoutChart', fameLabels, scoutValues, 'Cumulative Pulls (x1 equiv)', '#8b5cf6');
+            renderBarChart('scoutChart', fameLabels, scoutValues, 'Cumulative Pulls', '#8b5cf6');
 
             // Save state
             saveConfig();
         }
 
+        // --- SHOP & UTILS ---
+        function renderPacksTable() {
+            const tbody = document.getElementById('diamond_packs_table');
+            tbody.innerHTML = '';
+            state.packs.forEach((p, i) => {
+                const row = `<tr><td class="p-2">Tier ${i+1}</td><td class="p-2"><input type="number" step="0.01" class="w-16 bg-slate-900 border border-slate-700 rounded" value="${p.price}" onchange="state.packs[${i}].price=parseFloat(this.value);updateShop();saveConfig()"></td><td class="p-2"><input type="number" class="w-16 bg-slate-900 border border-slate-700 rounded" value="${p.amount}" onchange="state.packs[${i}].amount=parseFloat(this.value);updateShop();saveConfig()"></td></tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        function updateShop() {
+            const basePack = state.packs[0];
+            const val = basePack.price / basePack.amount;
+            document.getElementById('diamond_value_base').innerText = `$${val.toFixed(4)}`;
+            
+            const chests = [
+                {name:"Rare", cId:'chest_rare_cost', cardId:'chest_rare_cards'},
+                {name:"Epic", cId:'chest_epic_cost', cardId:'chest_epic_cards'},
+                {name:"Legend", cId:'chest_legend_cost', cardId:'chest_legend_cards'}
+            ];
+            const tbody = document.getElementById('shop_analysis_table');
+            tbody.innerHTML = '';
+            chests.forEach(c => {
+                const cost = parseFloat(document.getElementById(c.cId).value);
+                const cards = parseFloat(document.getElementById(c.cardId).value);
+                const usd = cost * val;
+                tbody.innerHTML += `<tr><td class="p-2">${c.name}</td><td class="p-2 text-blue-300">${cost}💎</td><td class="p-2">$${usd.toFixed(2)}</td><td class="p-2">$${(usd/cards).toFixed(2)}</td><td class="p-2 text-green-400">${(cards/usd).toFixed(2)}</td><td class="p-2 text-slate-500">$${(usd*0.9).toFixed(2)}-$${(usd*1.1).toFixed(2)}</td></tr>`;
+            });
+        }
+
+        // --- CHARTS RENDERERS ---
         function renderLineChart(id, labels, datasets, log) {
-            const canvas = document.getElementById(id);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (state.charts[id]) state.charts[id].destroy();
+            const el = document.getElementById(id);
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            if(state.charts[id]) state.charts[id].destroy();
             state.charts[id] = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: datasets.map(d => ({
-                        label: d.label, data: d.data, borderColor: d.color, tension: 0.3, pointRadius: 0, borderWidth: 2
-                    }))
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { 
-                        y: { 
-                            type: log ? 'logarithmic' : 'linear', 
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8', font: { size: 10 } }
-                        }, 
-                        x: { 
-                            grid: { display: false },
-                            ticks: { color: '#94a3b8', font: { size: 10 } }
-                        } 
-                    },
-                    plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } }
-                }
+                type: 'line', data: { labels, datasets: datasets.map(d=>({...d, tension:0.3, pointRadius:0, borderWidth:2, borderColor: d.color, backgroundColor: d.color})) },
+                options: { responsive:true, maintainAspectRatio:false, scales:{y:{type:log?'logarithmic':'linear', grid:{color:'#334155'}}, x:{display:false}}, plugins:{legend:{labels:{color:'#94a3b8'}}} }
             });
         }
-
         function renderBarChart(id, labels, data, label, color) {
-            const canvas = document.getElementById(id);
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            if (state.charts[id]) state.charts[id].destroy();
+            const el = document.getElementById(id);
+            if (!el) return;
+            const ctx = el.getContext('2d');
+            if(state.charts[id]) state.charts[id].destroy();
             state.charts[id] = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{ label: label, data: data, backgroundColor: color, borderRadius: 4 }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: { 
-                        y: { 
-                            grid: { color: '#334155' },
-                            ticks: { color: '#94a3b8', font: { size: 10 } }
-                        }, 
-                        x: { 
-                            display: false 
-                        } 
-                    },
-                    plugins: { legend: { display: false } }
-                }
+                type: 'bar', data: { labels, datasets:[{label, data, backgroundColor:color}] },
+                options: { responsive:true, maintainAspectRatio:false, scales:{y:{grid:{color:'#334155'}}, x:{display:false}}, plugins:{legend:{display:false}} }
             });
         }
 
-        // --- EXPORT/IMPORT LOGIC ---
+        // --- STORAGE & IMPORT/EXPORT ---
+        function saveConfig() { localStorage.setItem(STORAGE_KEY, JSON.stringify({chapters:state.chapters, packs:state.packs, trainings:state.trainings, inputs: getInputs() })); }
+        function loadConfig() {
+            const s = localStorage.getItem(STORAGE_KEY);
+            if(s) {
+                const c = JSON.parse(s);
+                if(c.chapters) state.chapters = c.chapters;
+                if(c.packs) state.packs = c.packs;
+                if(c.trainings) state.trainings = c.trainings;
+                if(c.inputs) setInputs(c.inputs);
+            }
+        }
+        function resetConfig() { if(confirm("Reset?")) { localStorage.removeItem(STORAGE_KEY); location.reload(); } }
+        
+        function getInputs() {
+            return {
+                cost_expo: document.getElementById('cost_expo').value,
+                income_expo: document.getElementById('income_expo').value,
+                dur_decay: document.getElementById('dur_decay').value,
+                stage_cash_base: document.getElementById('stage_cash_base').value,
+                stage_cash_mult: document.getElementById('stage_cash_mult').value,
+                stage_fame_base: document.getElementById('stage_fame_base').value,
+                stage_fame_growth: document.getElementById('stage_fame_growth').value,
+                rare_mult: document.getElementById('rare_mult').value,
+                epic_mult: document.getElementById('epic_mult').value,
+                chest_rare_cost: document.getElementById('chest_rare_cost').value,
+                chest_rare_cards: document.getElementById('chest_rare_cards').value,
+                chest_epic_cost: document.getElementById('chest_epic_cost').value,
+                chest_epic_cards: document.getElementById('chest_epic_cards').value,
+                chest_legend_cost: document.getElementById('chest_legend_cost').value,
+                chest_legend_cards: document.getElementById('chest_legend_cards').value,
+                scout_x1: document.getElementById('scout_x1').value,
+                scout_x10: document.getElementById('scout_x10').value,
+                scout_x40: document.getElementById('scout_x40').value
+            };
+        }
+        function setInputs(d) { for(let k in d) { const e = document.getElementById(k); if(e) e.value=d[k]; } }
+
         function exportYAML() {
-            const yaml = `
-# Economy Master Document - SportStars (Pro Revised v2.8)
-project_name: SportStars
-version: 2.8.0
-
-balancing_curves:
-  training_upgrade_cost: "BaseCost * (${document.getElementById('cost_expo').value} ^ CurrentLevelIndex)"
-  collector_income: "BaseIncome * (${document.getElementById('income_expo').value} ^ CurrentLevelIndex)"
-  collector_duration: "ChapterBaseDuration * (${document.getElementById('dur_decay').value} ^ CurrentLevelIndex)"
-  stage_reward_cash: "${document.getElementById('stage_cash_base').value} * (${document.getElementById('stage_cash_mult').value} ^ GlobalStageIndex)"
-  stage_reward_fame: "${document.getElementById('stage_fame_base').value} + (GlobalStageIndex * ${document.getElementById('stage_fame_growth').value})"
-
-scout:
-  pull_costs:
-    x1: ${document.getElementById('scout_x1').value}
-    x10: ${document.getElementById('scout_x10').value}
-    x40: ${document.getElementById('scout_x40').value}
-
-shop:
-  diamond_packs:
-${state.packs.map(p => `    - { price: ${p.price}, amount: ${p.amount} }`).join('\n')}
-  chests:
-    rare: { cost: ${document.getElementById('chest_rare_cost').value}, cards: ${document.getElementById('chest_rare_cards').value} }
-    epic: { cost: ${document.getElementById('chest_epic_cost').value}, cards: ${document.getElementById('chest_epic_cards').value} }
-    legend: { cost: ${document.getElementById('chest_legend_cost').value}, cards: ${document.getElementById('chest_legend_cards').value} }
-
-chapters:
-${state.chapters.map(ch => `  ch_${ch.id}: { stages: ${ch.stages}, cap: ${ch.cap}, duration: ${ch.dur} }`).join('\n')}
-
-manager_upgrades:
-  rare: "Level * ${document.getElementById('rare_mult').value}"
-  epic: "Level * ${document.getElementById('epic_mult').value}"
-  legend: "Fibonacci(CurrentLevelIndex)"
-`;
-            document.getElementById('yamlOutput').value = yaml.trim();
+            const y = `version: 3.2\ntrainings:\n${JSON.stringify(state.trainings, null, 2)}\nchapters:\n${JSON.stringify(state.chapters, null, 2)}`;
+            document.getElementById('yamlOutput').value = y;
             document.getElementById('exportModal').classList.remove('hidden');
             document.getElementById('exportModal').classList.add('flex');
         }
-
-        function closeExport() {
-            document.getElementById('exportModal').classList.add('hidden');
-            document.getElementById('exportModal').classList.remove('flex');
+        
+        function closeExport() { document.getElementById('exportModal').classList.add('hidden'); document.getElementById('exportModal').classList.remove('flex'); }
+        function openImport() { document.getElementById('importModal').classList.remove('hidden'); document.getElementById('importModal').classList.add('flex'); }
+        function closeImport() { document.getElementById('importModal').classList.add('hidden'); document.getElementById('importModal').classList.remove('flex'); }
+        
+        function parseAndImport() {
+            try {
+                const j = JSON.parse(document.getElementById('yamlInput').value.replace('version: 3.2\ntrainings:\n', '').replace('\nchapters:\n', ', "chapters": '));
+            } catch(e) { alert("Import failed."); }
+            closeImport();
         }
         
-        function openImport() {
-            document.getElementById('importModal').classList.remove('hidden');
-            document.getElementById('importModal').classList.add('flex');
-        }
-
-        function closeImport() {
-            document.getElementById('importModal').classList.add('hidden');
-            document.getElementById('importModal').classList.remove('flex');
-        }
-
-        function parseAndImport() {
-            const text = document.getElementById('yamlInput').value;
-            
-            // Regex Parsers
-            const costExpoMatch = text.match(/training_upgrade_cost:.*BaseCost \* \((\d+\.?\d*)/);
-            const incomeExpoMatch = text.match(/collector_income:.*BaseIncome \* \((\d+\.?\d*)/);
-            const durDecayMatch = text.match(/collector_duration:.*ChapterBaseDuration \* \((\d+\.?\d*)/);
-            
-            // Stage Rewards
-            const cashBaseMatch = text.match(/stage_reward_cash: "(\d+) \*/);
-            const cashMultMatch = text.match(/stage_reward_cash:.*\* \((\d+\.?\d*)/);
-            const fameBaseMatch = text.match(/stage_reward_fame: "(\d+) \+/);
-            const fameGrowthMatch = text.match(/stage_reward_fame:.*\* (\d+)\)"/);
-
-            const rareMatch = text.match(/rare:.*\* (\d+)/);
-            const epicMatch = text.match(/epic:.*\* (\d+)/);
-            
-            const scoutX1Match = text.match(/x1: (\d+)/);
-            const scoutX10Match = text.match(/x10: (\d+)/);
-            const scoutX40Match = text.match(/x40: (\d+)/);
-
-            if (costExpoMatch) syncInputs('cost_expo', costExpoMatch[1]);
-            if (incomeExpoMatch) syncInputs('income_expo', incomeExpoMatch[1]);
-            if (durDecayMatch) syncInputs('dur_decay', durDecayMatch[1]);
-            
-            if (cashBaseMatch) document.getElementById('stage_cash_base').value = cashBaseMatch[1];
-            if (cashMultMatch) document.getElementById('stage_cash_mult').value = cashMultMatch[1];
-            if (fameBaseMatch) document.getElementById('stage_fame_base').value = fameBaseMatch[1];
-            if (fameGrowthMatch) document.getElementById('stage_fame_growth').value = fameGrowthMatch[1];
-
-            if (rareMatch) document.getElementById('rare_mult').value = rareMatch[1];
-            if (epicMatch) document.getElementById('epic_mult').value = epicMatch[1];
-            
-            if (scoutX1Match) document.getElementById('scout_x1').value = scoutX1Match[1];
-            if (scoutX10Match) document.getElementById('scout_x10').value = scoutX10Match[1];
-            if (scoutX40Match) document.getElementById('scout_x40').value = scoutX40Match[1];
-            
-            // Parse Chests
-            const rareChest = text.match(/rare: \{ cost: (\d+), cards: (\d+) \}/);
-            const epicChest = text.match(/epic: \{ cost: (\d+), cards: (\d+) \}/);
-            const legendChest = text.match(/legend: \{ cost: (\d+), cards: (\d+) \}/);
-            
-            if (rareChest) { document.getElementById('chest_rare_cost').value = rareChest[1]; document.getElementById('chest_rare_cards').value = rareChest[2]; }
-            if (epicChest) { document.getElementById('chest_epic_cost').value = epicChest[1]; document.getElementById('chest_epic_cards').value = epicChest[2]; }
-            if (legendChest) { document.getElementById('chest_legend_cost').value = legendChest[1]; document.getElementById('chest_legend_cards').value = legendChest[2]; }
-
-            // Parse Chapters
-            const chapterRegex = /ch_(\d+): \{ stages: (\d+), cap: (\d+), duration: (\d+) \}/g;
-            let match;
-            const newChapters = [];
-            while ((match = chapterRegex.exec(text)) !== null) {
-                newChapters.push({
-                    id: parseInt(match[1]),
-                    stages: parseInt(match[2]),
-                    cap: parseInt(match[3]),
-                    dur: parseInt(match[4]),
-                    pulls: "Calculated"
-                });
-            }
-            if (newChapters.length > 0) {
-                state.chapters = newChapters;
-                renderChapterInputs();
-            }
-            
-            // Parse Packs
-            const packRegex = /\{ price: (\d+\.?\d*), amount: (\d+) \}/g;
-            let packMatch;
-            const newPacks = [];
-            while ((packMatch = packRegex.exec(text)) !== null) {
-                newPacks.push({
-                    price: parseFloat(packMatch[1]),
-                    amount: parseInt(packMatch[2])
-                });
-            }
-            if (newPacks.length > 0) {
-                state.packs = newPacks;
-                renderPacksTable();
-            }
-
-            updateCharts();
-            updateShop();
-            saveConfig(); // Save after import
-            closeImport();
-            alert("Configuration Imported Successfully!");
-        }
-
         function copyToClipboard() {
-            const el = document.getElementById('yamlOutput');
-            el.select();
-            document.execCommand('copy');
-            const btn = event.currentTarget;
-            btn.innerText = "COPIED!";
-            setTimeout(() => { btn.innerText = "Copy to Clipboard"; }, 2000);
+            document.getElementById('yamlOutput').select(); document.execCommand('copy');
         }
 
         window.onload = init;
