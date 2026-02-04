@@ -1,8 +1,9 @@
 title: SportStars Tooling Hub
 description: Internal game design & economy balancing tools.
-theme: jekyll-theme-slate
 
-# Ensure tools are treated as raw files and not wrapped in the theme layout
+# Disabled default theme to use custom Tailwind layout
+# theme: jekyll-theme-slate 
+
 defaults:
   - scope:
       path: "tools"
