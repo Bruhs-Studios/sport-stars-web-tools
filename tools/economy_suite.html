@@ -39,6 +39,7 @@
             70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
+        .help-cursor { cursor: help; border-bottom: 1px dotted #64748b; }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
@@ -47,10 +48,10 @@
     <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0 z-20">
         <div class="p-6 border-b border-slate-800">
             <h1 class="text-xl font-bold text-blue-500 italic">SportStars</h1>
-            <p class="text-xs text-slate-500">Pro Balancing v3.2</p>
+            <p class="text-xs text-slate-500">Pro Balancing v3.4.1</p>
         </div>
         <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
-            <button onclick="showSection('chapters')" class="nav-btn active w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-map w-5"></i> Chapters & Sim</button>
+            <button onclick="showSection('chapters')" class="nav-btn active w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-map w-5"></i> Chapters & Rewards</button>
             <button onclick="showSection('trainings')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-dumbbell w-5"></i> Trainings & Slots</button>
             <button onclick="showSection('scout')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-binoculars w-5"></i> Scout (Athletes)</button>
             <button onclick="showSection('managers')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-user-tie w-5"></i> Managers</button>
@@ -77,37 +78,13 @@
                 
                 <!-- Reward Config -->
                 <div class="card space-y-4">
-                    <h3 class="font-bold border-b border-slate-700 pb-2">Stage Reward Config</h3>
+                    <h3 class="font-bold border-b border-slate-700 pb-2 help-cursor" title="Define how much currency players earn for completing stages.">Stage Reward Config</h3>
                     <div class="grid grid-cols-2 gap-4">
-                        <div><label class="text-xs text-green-400 font-bold">Base Cash</label><input type="number" id="stage_cash_base" value="2000" onchange="updateCharts();saveConfig()"></div>
-                        <div><label class="text-xs text-green-400 font-bold">Cash Multiplier</label><input type="number" id="stage_cash_mult" value="2.6" step="0.1" onchange="updateCharts();saveConfig()"></div>
-                        <div><label class="text-xs text-yellow-400 font-bold">Base Fame</label><input type="number" id="stage_fame_base" value="100" onchange="updateCharts();saveConfig()"></div>
-                        <div><label class="text-xs text-yellow-400 font-bold">Fame Growth</label><input type="number" id="stage_fame_growth" value="45" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-green-400 font-bold help-cursor" title="The cash reward for Stage 1.1">Base Cash</label><input type="number" id="stage_cash_base" value="2000" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-green-400 font-bold help-cursor" title="Multiplier applied every stage: Reward = Base * (Mult ^ StageIndex)">Cash Multiplier</label><input type="number" id="stage_cash_mult" value="2.6" step="0.1" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-yellow-400 font-bold help-cursor" title="The fame reward for Stage 1.1">Base Fame</label><input type="number" id="stage_fame_base" value="100" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-yellow-400 font-bold help-cursor" title="Linear increase per stage: Reward = Base + (Growth * StageIndex)">Fame Growth</label><input type="number" id="stage_fame_growth" value="45" onchange="updateCharts();saveConfig()"></div>
                     </div>
-                </div>
-
-                <!-- Progression Sim Visualization -->
-                <div class="card border border-blue-500/30 bg-blue-900/10">
-                    <h3 class="font-bold mb-4 flex justify-between items-center">
-                        <span>Progression Analysis (Slots Inclusive)</span>
-                        <span class="text-[10px] text-blue-300 bg-blue-900/50 px-2 py-1 rounded">LIVE PREVIEW</span>
-                    </h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs">
-                            <thead class="bg-slate-800 text-slate-400 uppercase">
-                                <tr>
-                                    <th class="p-2">Ch</th>
-                                    <th class="p-2">Total Cost</th>
-                                    <th class="p-2">Buying Power</th>
-                                    <th class="p-2">Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sim-table" class="divide-y divide-slate-700/50">
-                                <!-- Populated by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                    <p class="text-[10px] text-slate-400 mt-2 italic">* Buying Power = How many training levels 1 stage win buys.</p>
                 </div>
 
                 <!-- Chapter Inputs -->
@@ -125,11 +102,11 @@
 
                 <!-- Global Math -->
                 <div class="card space-y-4">
-                    <h3 class="font-bold border-b border-slate-700 pb-2">Global Math Configs</h3>
+                    <h3 class="font-bold border-b border-slate-700 pb-2 help-cursor" title="Global formulas affecting all trainings.">Global Math Configs</h3>
                     <div class="grid grid-cols-3 gap-4">
-                        <div><label class="text-xs text-slate-500">Cost Expo (Rec: 1.15)</label><input type="number" id="cost_expo" value="1.15" step="0.01" onchange="updateCharts();saveConfig()"></div>
-                        <div><label class="text-xs text-slate-500">Income Expo (Rec: 1.09)</label><input type="number" id="income_expo" value="1.09" step="0.01" onchange="updateCharts();saveConfig()"></div>
-                        <div><label class="text-xs text-slate-500">Dur Decay (Rec: 0.9973)</label><input type="number" id="dur_decay" value="0.9973" step="0.0001" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-slate-500 help-cursor" title="Cost increases by this factor every level (1.15 = +15%).">Cost Expo (Rec: 1.15)</label><input type="number" id="cost_expo" value="1.15" step="0.01" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-slate-500 help-cursor" title="Income increases by this factor every level (1.09 = +9%). Must be < Cost Expo.">Income Expo (Rec: 1.09)</label><input type="number" id="income_expo" value="1.09" step="0.01" onchange="updateCharts();saveConfig()"></div>
+                        <div><label class="text-xs text-slate-500 help-cursor" title="Duration gets multiplied by this every level (0.99 = 1% faster).">Dur Decay (Rec: 0.9973)</label><input type="number" id="dur_decay" value="0.9973" step="0.0001" onchange="updateCharts();saveConfig()"></div>
                     </div>
                 </div>
 
@@ -146,15 +123,15 @@
                     <h3 class="font-bold border-b border-slate-700 pb-2">Pull Costs (Fame)</h3>
                     <div class="space-y-4">
                         <div class="input-group">
-                            <label class="text-[10px] uppercase text-slate-500">x1 Pull</label>
+                            <label class="text-[10px] uppercase text-slate-500 help-cursor" title="Fame cost for a single pull">x1 Pull</label>
                             <input type="number" id="scout_x1" value="100" onchange="updateCharts();saveConfig()">
                         </div>
                         <div class="input-group">
-                            <label class="text-[10px] uppercase text-slate-500">x10 Pull</label>
+                            <label class="text-[10px] uppercase text-slate-500 help-cursor" title="Fame cost for 10 pulls">x10 Pull</label>
                             <input type="number" id="scout_x10" value="900" onchange="updateCharts();saveConfig()">
                         </div>
                         <div class="input-group">
-                            <label class="text-[10px] uppercase text-slate-500">x40 Pull</label>
+                            <label class="text-[10px] uppercase text-slate-500 help-cursor" title="Fame cost for 40 pulls">x40 Pull</label>
                             <input type="number" id="scout_x40" value="3200" onchange="updateCharts();saveConfig()">
                         </div>
                     </div>
@@ -167,17 +144,17 @@
                 <div class="grid grid-cols-1 gap-6">
                     <div class="card p-4 bg-slate-900/50 rounded-xl border border-blue-500/20">
                         <h4 class="font-bold text-blue-400 mb-2">Rare Cost Formula</h4>
-                        <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
+                        <p class="text-xs text-slate-500 mb-2 help-cursor" title="Linear Scaling: Cost = Current Level * Multiplier">Cost: Level * Mult</p>
                         <input type="number" id="rare_mult" value="5" onchange="updateCharts();saveConfig()">
                     </div>
                     <div class="card p-4 bg-slate-900/50 rounded-xl border border-purple-500/20">
                         <h4 class="font-bold text-purple-400 mb-2">Epic Cost Formula</h4>
-                        <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
+                        <p class="text-xs text-slate-500 mb-2 help-cursor" title="Linear Scaling: Cost = Current Level * Multiplier">Cost: Level * Mult</p>
                         <input type="number" id="epic_mult" value="3" onchange="updateCharts();saveConfig()">
                     </div>
                     <div class="card p-4 bg-slate-900/50 rounded-xl border border-orange-500/20">
                         <h4 class="font-bold text-orange-400 mb-2">Legend (Fixed)</h4>
-                        <p class="text-xs text-slate-500 mb-2">Fibonacci(Level)</p>
+                        <p class="text-xs text-slate-500 mb-2 help-cursor" title="Fibonacci Sequence: 1, 2, 3, 5, 8, 13...">Fibonacci(Level)</p>
                         <div class="text-xs mono text-orange-300 mt-2">1, 2, 3, 5, 8, 13...</div>
                     </div>
                 </div>
@@ -203,7 +180,7 @@
                         </table>
                     </div>
                     <div class="p-3 bg-slate-800 rounded text-center">
-                        <span class="text-xs text-slate-400">Base Valuation (Tier 1): 1 Diamond = </span>
+                        <span class="text-xs text-slate-400 help-cursor" title="Calculated from Tier 1: Price / Amount">Base Valuation (Tier 1): 1 Diamond = </span>
                         <span id="diamond_value_base" class="text-green-400 font-bold font-mono">...</span>
                     </div>
                 </div>
@@ -240,16 +217,40 @@
                 
                 <!-- Health Status -->
                 <div class="flex items-center justify-between bg-slate-800 p-4 rounded-lg">
-                    <span class="text-sm font-bold text-slate-400">Economy State</span>
+                    <span class="text-sm font-bold text-slate-400 help-cursor" title="Checks if Income Growth < Cost Growth. If Income grows faster, the game breaks.">Economy State</span>
                     <div id="health-status" class="px-4 py-2 rounded-full text-xs font-bold bg-green-900 text-green-300 border border-green-500">
                         STATUS: HEALTHY
                     </div>
                 </div>
 
-                <!-- Time To Upgrade (Multi-Line) -->
+                <!-- 1. Progression Sim Visualization -->
+                <div class="card border border-blue-500/30 bg-blue-900/10 shadow-lg shadow-black/20">
+                    <h3 class="font-bold mb-4 flex justify-between items-center text-white help-cursor" title="A snapshot of the progression math from the Chapters section.">
+                        <span>Progression Analysis (Slots Inclusive)</span>
+                        <span class="text-[10px] text-blue-300 bg-blue-900/50 px-2 py-1 rounded">LIVE TABLE</span>
+                    </h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-300">
+                            <thead class="bg-slate-800 text-slate-400 uppercase">
+                                <tr>
+                                    <th class="p-2 help-cursor" title="Chapter">Ch</th>
+                                    <th class="p-2 help-cursor" title="Total cash needed to unlock slots + upgrade levels to cap">Total Cost</th>
+                                    <th class="p-2 help-cursor" title="Sum of all cash rewards from stages in this chapter">Total Stage Cash</th>
+                                    <th class="p-2 help-cursor" title="How many levels 1 stage win buys">Buying Power</th>
+                                    <th class="p-2 help-cursor" title="Surplus = Rewards > Cost. Deficit = Idle needed.">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sim-table" class="divide-y divide-slate-700/50">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Time To Upgrade (Multi-Line) -->
                 <div class="card border-l-4 border-yellow-500 shadow-lg shadow-black/20">
                     <div class="mb-4">
-                        <h3 class="font-bold text-lg text-white">Time To Next Upgrade (The Wall)</h3>
+                        <h3 class="font-bold text-lg text-white help-cursor" title="The single most important metric. Shows how many seconds of idle income it takes to afford the NEXT level upgrade.">Time To Next Upgrade (The Wall)</h3>
                         <p class="text-xs text-slate-400">Lines show seconds needed to afford the next level for each training. Includes chapter durations and slot income.</p>
                     </div>
                     <div class="h-[350px]">
@@ -257,49 +258,49 @@
                     </div>
                 </div>
 
-                <!-- Duration Decay -->
+                <!-- 3. Duration Decay -->
                 <div class="card shadow-lg shadow-black/20">
-                    <h3 class="font-bold mb-4 text-white">Duration Decay (% of Base)</h3>
+                    <h3 class="font-bold mb-4 text-white help-cursor" title="Shows how the cycle duration reduces as training level increases.">Duration Decay (% of Base)</h3>
                     <div class="h-[200px]">
                         <canvas id="durationChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Cost vs Income (Cardio Reference) -->
+                <!-- 4. Cost vs Income (Cardio Reference) -->
                 <div class="card shadow-lg shadow-black/20">
-                    <h3 class="font-bold mb-4 text-white">Cost vs Income (Cardio Baseline)</h3>
+                    <h3 class="font-bold mb-4 text-white help-cursor" title="Logarithmic view of Cost vs Income per Second for the base training (Cardio).">Cost vs Income (Cardio Baseline)</h3>
                     <div class="h-[250px]">
                         <canvas id="trainingChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Fame Accumulation -->
+                <!-- 5. Fame Accumulation -->
                 <div class="card shadow-lg shadow-black/20">
-                    <h3 class="font-bold mb-4 text-white">Cumulative Fame</h3>
+                    <h3 class="font-bold mb-4 text-white help-cursor" title="Total Fame earned by completing stages sequentially.">Cumulative Fame</h3>
                     <div class="h-[200px]">
                         <canvas id="fameChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Scout Pulls -->
+                <!-- 6. Scout Pulls -->
                 <div class="card shadow-lg shadow-black/20">
-                    <h3 class="font-bold mb-4 text-white">Cumulative Athlete Pulls</h3>
+                    <h3 class="font-bold mb-4 text-white help-cursor" title="How many athletes a player can recruit based on Cumulative Fame.">Cumulative Athlete Pulls</h3>
                     <div class="h-[200px]">
                         <canvas id="scoutChart"></canvas>
                     </div>
                 </div>
 
-                <!-- Shop Analysis -->
+                <!-- 7. Shop Analysis -->
                 <div class="card shadow-lg shadow-black/20">
-                    <h3 class="font-bold mb-4 text-white">Shop Value Analysis</h3>
+                    <h3 class="font-bold mb-4 text-white help-cursor" title="Evaluation of chest value in USD based on Diamond Pack pricing.">Shop Value Analysis</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs">
                             <thead class="bg-slate-800 text-slate-400">
                                 <tr>
-                                    <th class="p-2">Chest</th>
-                                    <th class="p-2">$$ Cost</th>
-                                    <th class="p-2">$/Card</th>
-                                    <th class="p-2">Cards/$</th>
+                                    <th class="p-2 help-cursor" title="Chest Type">Chest</th>
+                                    <th class="p-2 help-cursor" title="Calculated USD cost based on Tier 1 Diamond Pack">$$ Cost</th>
+                                    <th class="p-2 help-cursor" title="Price per single card">$/Card</th>
+                                    <th class="p-2 help-cursor" title="Cards per $1 USD">Cards/$</th>
                                 </tr>
                             </thead>
                             <tbody id="shop_analysis_table" class="divide-y divide-slate-700"></tbody>
@@ -342,7 +343,7 @@
     </div>
 
     <script>
-        const STORAGE_KEY = 'sportstars_config_v3_2';
+        const STORAGE_KEY = 'sportstars_config_v3_4_1';
 
         // --- DATA MODEL ---
         const state = {
@@ -411,7 +412,7 @@
                     btn.classList.add('active');
                 }
             });
-            // No updateCharts() needed here as right panel is persistent
+            updateCharts();
         }
 
         function syncInputs(targetId, val) {
@@ -433,15 +434,15 @@
                     <h4 class="font-bold flex justify-between">Chapter ${ch.id} <span class="text-xs text-slate-500 font-normal">Cap ${ch.cap}</span></h4>
                     <div class="grid grid-cols-2 gap-3">
                         <div class="input-group">
-                            <label class="text-[10px] uppercase font-bold text-slate-500">Stages</label>
+                            <label class="text-[10px] uppercase font-bold text-slate-500 help-cursor" title="Number of stages in this chapter">Stages</label>
                             <input type="number" onchange="state.chapters[${i}].stages=parseInt(this.value);updateCharts();saveConfig()" value="${ch.stages}">
                         </div>
                         <div class="input-group">
-                            <label class="text-[10px] uppercase font-bold text-slate-500">Lvl Cap</label>
+                            <label class="text-[10px] uppercase font-bold text-slate-500 help-cursor" title="Max level for trainings in this chapter">Lvl Cap</label>
                             <input type="number" onchange="state.chapters[${i}].cap=parseInt(this.value);updateCharts();saveConfig()" value="${ch.cap}">
                         </div>
                         <div class="input-group col-span-2">
-                            <label class="text-[10px] uppercase font-bold text-slate-500">Base Dur (s)</label>
+                            <label class="text-[10px] uppercase font-bold text-slate-500 help-cursor" title="Base training cycle duration in seconds for this chapter">Base Dur (s)</label>
                             <input type="number" onchange="state.chapters[${i}].dur=parseInt(this.value);updateCharts();saveConfig()" value="${ch.dur}">
                         </div>
                     </div>
@@ -458,14 +459,14 @@
                 let slotsHtml = '';
                 t.slots.forEach((s, sIdx) => {
                     slotsHtml += `
-                        <div class="bg-slate-900/50 p-2 rounded border border-slate-800 text-center relative">
+                        <div class="bg-slate-900/50 p-2 rounded border border-slate-800 text-center relative" title="Configure Slot ${sIdx+1}">
                             <div class="absolute top-1 right-1">
-                                <input type="checkbox" ${s.checked ? 'checked' : ''} onchange="toggleSlot(${tIdx}, ${sIdx})">
+                                <input type="checkbox" ${s.checked ? 'checked' : ''} onchange="toggleSlot(${tIdx}, ${sIdx})" title="Include in chart calculations?">
                             </div>
                             <div class="text-[10px] font-bold text-slate-400 mb-1">Slot ${sIdx + 1}</div>
-                            <label class="text-[8px] text-slate-500 block">Unlock Cost</label>
+                            <label class="text-[8px] text-slate-500 block help-cursor" title="Cost to unlock this slot">Unlock Cost</label>
                             <input type="number" class="mb-1 text-center" placeholder="Unlock" value="${s.unlock}" onchange="updateSlot(${tIdx}, ${sIdx}, 'unlock', this.value)">
-                            <label class="text-[8px] text-green-500 block">Cash/Cycle</label>
+                            <label class="text-[8px] text-green-500 block help-cursor" title="Base income per cycle at Level 1">Cash/Cycle</label>
                             <input type="number" class="text-center text-green-400 font-bold" placeholder="Base" value="${s.income}" onchange="updateSlot(${tIdx}, ${sIdx}, 'income', this.value)">
                         </div>
                     `;
@@ -476,7 +477,7 @@
                         <div class="flex justify-between items-center mb-2 border-b border-slate-700 pb-2">
                             <h4 class="font-bold" style="color:${t.color}">${t.name}</h4>
                             <div class="flex items-center gap-2">
-                                <label class="text-[10px] text-slate-500">Base Upgrade Cost ($):</label>
+                                <label class="text-[10px] text-slate-500 help-cursor" title="Base cost to upgrade from Level 0 to 1">Base Upgrade Cost ($):</label>
                                 <input type="number" class="w-24 text-xs font-mono text-red-300" value="${t.baseUpgrade}" onchange="updateTrainingBase(${tIdx}, this.value)">
                             </div>
                         </div>
@@ -530,11 +531,14 @@
                     for (let l = currentLevel; l < ch.cap; l++) {
                         totalChapterCost += t.baseUpgrade * Math.pow(costExpo, l);
                     }
+                    // FIXED LOGIC: Only count unlock cost if it becomes available IN THIS CHAPTER
                     for(let s=0; s < maxSlotsAllowed; s++) {
                         let shouldCountCost = false;
-                        if (ch.id === 1 && s < 2) shouldCountCost = true; 
-                        if (ch.id === 2 && s === 2) shouldCountCost = true; 
-                        if (ch.id >= 3 && s === 3) shouldCountCost = true; 
+                        if (ch.id === 1 && s < 2) shouldCountCost = true; // Ch1 unlocks 0 & 1
+                        if (ch.id === 2 && s === 2) shouldCountCost = true; // Ch2 unlocks 2
+                        if (ch.id === 3 && s === 3) shouldCountCost = true; // Ch3 unlocks 3
+                        // Ch4+ does not unlock any new slots, so no cost added.
+                        
                         if (shouldCountCost) totalChapterCost += t.slots[s].unlock;
                     }
                 });
@@ -553,16 +557,17 @@
 
                 const isSurplus = totalChapterRewards >= totalChapterCost;
                 const statusHtml = isSurplus 
-                    ? `<span class="text-green-400 font-bold"><i class="fa fa-check-circle"></i> Surplus</span>`
-                    : `<span class="text-red-400 font-bold"><i class="fa fa-clock"></i> Deficit</span>`;
+                    ? `<span class="text-green-400 font-bold" title="Rewards exceed costs. Easy progress."><i class="fa fa-check-circle"></i> Surplus</span>`
+                    : `<span class="text-red-400 font-bold" title="Costs exceed rewards. Idle grinding required."><i class="fa fa-clock"></i> Deficit</span>`;
                 
                 let powerColor = levelsBuyable > 5 ? "text-green-400 font-bold" : (levelsBuyable > 1 ? "text-yellow-400" : "text-red-400");
 
                 const row = `
                     <tr class="hover:bg-slate-800/50">
-                        <td class="p-2 border-b border-slate-700 font-bold">Ch ${ch.id}</td>
-                        <td class="p-2 border-b border-slate-700 text-slate-300 font-mono">${totalChapterCost.toExponential(2)}</td>
-                        <td class="p-2 border-b border-slate-700 font-mono ${powerColor}">${levelsBuyable.toFixed(2)}</td>
+                        <td class="p-2 border-b border-slate-700 font-bold" title="Chapter Index">Ch ${ch.id}</td>
+                        <td class="p-2 border-b border-slate-700 text-slate-300 font-mono" title="Upgrade Costs + Slot Unlocks">${totalChapterCost.toExponential(2)}</td>
+                        <td class="p-2 border-b border-slate-700 text-green-300 font-mono" title="Sum of all stage rewards in chapter">${totalChapterRewards.toExponential(2)}</td>
+                        <td class="p-2 border-b border-slate-700 font-mono ${powerColor}" title="Levels buyable with 1 stage reward">${levelsBuyable.toFixed(2)}</td>
                         <td class="p-2 border-b border-slate-700 text-xs">${statusHtml}</td>
                     </tr>
                 `;
@@ -746,7 +751,7 @@
         function setInputs(d) { for(let k in d) { const e = document.getElementById(k); if(e) e.value=d[k]; } }
 
         function exportYAML() {
-            const y = `version: 3.2\ntrainings:\n${JSON.stringify(state.trainings, null, 2)}\nchapters:\n${JSON.stringify(state.chapters, null, 2)}`;
+            const y = `version: 3.4\ntrainings:\n${JSON.stringify(state.trainings, null, 2)}\nchapters:\n${JSON.stringify(state.chapters, null, 2)}`;
             document.getElementById('yamlOutput').value = y;
             document.getElementById('exportModal').classList.remove('hidden');
             document.getElementById('exportModal').classList.add('flex');
@@ -758,7 +763,7 @@
         
         function parseAndImport() {
             try {
-                const j = JSON.parse(document.getElementById('yamlInput').value.replace('version: 3.2\ntrainings:\n', '').replace('\nchapters:\n', ', "chapters": '));
+                const j = JSON.parse(document.getElementById('yamlInput').value.replace('version: 3.4\ntrainings:\n', '').replace('\nchapters:\n', ', "chapters": '));
             } catch(e) { alert("Import failed."); }
             closeImport();
         }
