@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SportStars Pro Balancing Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono&display=swap');
+        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --danger: #ef4444; --success: #22c55e; }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: #f1f5f9; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .nav-btn.active { background-color: var(--accent); color: white; }
+        .section-content { display: none; }
+        .section-content.active { display: block; }
+        input[type="number"], input[type="text"] {
+            background: #0f172a; border: 1px solid #334155; border-radius: 6px; padding: 0.5rem; width: 100%; color: #fff;
+        }
+        .card { background: var(--card); border: 1px solid #334155; border-radius: 12px; padding: 1.5rem; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #475569; }
+
+        .warning-pulse { animation: pulse-red 2s infinite; }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col flex-shrink-0">
+        <div class="p-6 border-b border-slate-800">
+            <h1 class="text-xl font-bold text-blue-500 italic">SportStars</h1>
+            <p class="text-xs text-slate-500">Pro Balancing v2.6</p>
+        </div>
+        <nav class="flex-grow p-4 space-y-2 overflow-y-auto">
+            <button onclick="showSection('dashboard')" class="nav-btn active w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-tachometer-alt w-5"></i> Pro Dashboard</button>
+            <button onclick="showSection('simulation')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-play-circle w-5"></i> Progression Sim</button>
+            <button onclick="showSection('chapters')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-map w-5"></i> Chapters & Rewards</button>
+            <button onclick="showSection('trainings')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-dumbbell w-5"></i> Training Logic</button>
+            <button onclick="showSection('managers')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-user-tie w-5"></i> Managers</button>
+            <button onclick="showSection('shop')" class="nav-btn w-full text-left p-3 rounded-lg text-sm flex items-center gap-3 transition-colors"><i class="fa fa-store w-5"></i> Shop & Gacha</button>
+        </nav>
+        <div class="p-4 bg-slate-950 border-t border-slate-800 space-y-2">
+            <button onclick="openImport()" class="w-full bg-slate-800 hover:bg-slate-700 p-3 rounded-lg font-bold transition-all text-xs flex items-center justify-center gap-2"><i class="fa fa-file-import"></i> Import</button>
+            <button onclick="exportYAML()" class="w-full bg-green-600 hover:bg-green-700 p-3 rounded-lg font-bold transition-all text-xs flex items-center justify-center gap-2"><i class="fa fa-file-export"></i> Export</button>
+            <button onclick="resetConfig()" class="w-full bg-red-900/50 hover:bg-red-900 border border-red-800 p-3 rounded-lg font-bold transition-all text-xs text-red-300 flex items-center justify-center gap-2 mt-4"><i class="fa fa-trash-alt"></i> Reset Defaults</button>
+        </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="flex-grow overflow-y-auto p-8 bg-slate-950 scroll-smooth">
+        
+        <!-- SECTION: PRO DASHBOARD -->
+        <section id="dashboard" class="section-content active space-y-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-bold text-white">Economy Health Check</h2>
+                <div id="health-status" class="px-4 py-2 rounded-full text-xs font-bold bg-green-900 text-green-300 border border-green-500">
+                    STATUS: HEALTHY
+                </div>
+            </div>
+
+            <!-- The Critical Metric: Time to Upgrade -->
+            <div class="card border-l-4 border-yellow-500">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h3 class="font-bold text-lg text-white">Time To Next Upgrade (The "Wall")</h3>
+                        <p class="text-xs text-slate-400">Formula: Cost / (IncomePerCycle / Duration). <br>Should trend UPWARD. If flat/down, game is broken.</p>
+                    </div>
+                </div>
+                <div class="h-[300px]">
+                    <canvas id="timeToUpgradeChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: PROGRESSION SIMULATION -->
+        <section id="simulation" class="section-content space-y-6">
+            <div class="flex justify-between items-end">
+                <h2 class="text-2xl font-bold">Progression Simulation</h2>
+                <p class="text-sm text-slate-400">Can players max out using only Stage Rewards?</p>
+            </div>
+            
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <div class="card">
+                    <h3 class="font-bold mb-4 text-blue-400">Cost vs Rewards Analysis</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-800 text-slate-400 uppercase">
+                                <tr>
+                                    <th class="p-3">Chapter</th>
+                                    <th class="p-3">Total Cost</th>
+                                    <th class="p-3">Buying Power (Levels/Win)</th>
+                                    <th class="p-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sim-table" class="divide-y divide-slate-700">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card bg-slate-900/50 border-slate-700">
+                    <h3 class="font-bold mb-2">Simulation Logic</h3>
+                    <ul class="text-xs space-y-2 text-slate-400 list-disc pl-4">
+                        <li><strong>Buying Power:</strong> How many levels of the current best training can a SINGLE stage reward buy?</li>
+                        <li><strong>Goal:</strong> Should be > 2.0 early game, and > 0.5 late game (to help, but not finish instantly).</li>
+                        <li><strong class="text-green-400">SURPLUS:</strong> Reward Sum > Cost Sum.</li>
+                        <li><strong class="text-red-400">DEFICIT:</strong> Cost Sum > Reward Sum. Need Idle.</li>
+                    </ul>
+                    <div class="mt-4 p-4 bg-blue-900/20 rounded border border-blue-500/30">
+                        <p class="text-sm text-blue-200"><i class="fa fa-info-circle mr-2"></i> <strong>Pro Tip:</strong> Stage Reward Multiplier bumped to 2.5 to match exponential cost growth.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: CHAPTERS & REWARDS -->
+        <section id="chapters" class="section-content space-y-6">
+             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                <div class="card lg:col-span-2 space-y-4">
+                    <h3 class="font-bold border-b border-slate-700 pb-2">Stage Reward Config</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="text-xs text-green-400 font-bold">Base Cash</label><input type="number" id="stage_cash_base" value="1200" onchange="updateCharts()"></div>
+                        <div><label class="text-xs text-green-400 font-bold">Cash Multiplier (Rec: 2.5)</label><input type="number" id="stage_cash_mult" value="2.5" step="0.1" onchange="updateCharts()"></div>
+                        <div><label class="text-xs text-yellow-400 font-bold">Base Fame</label><input type="number" id="stage_fame_base" value="100" onchange="updateCharts()"></div>
+                        <div><label class="text-xs text-yellow-400 font-bold">Fame Growth (+Per Stage)</label><input type="number" id="stage_fame_growth" value="45" onchange="updateCharts()"></div>
+                    </div>
+                </div>
+                <div class="card">
+                     <h3 class="font-bold mb-2">Fame Projection</h3>
+                     <div class="h-[150px]">
+                        <canvas id="fameChart"></canvas>
+                     </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="chapter-inputs">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- SECTION: TRAININGS -->
+        <section id="trainings" class="section-content space-y-6">
+            <h2 class="text-2xl font-bold mb-6">Training Logic</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="card space-y-4">
+                    <h3 class="font-bold border-b border-slate-700 pb-2">Math Configs</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div><label class="text-xs text-slate-500">Cost Expo (Rec: 1.15)</label><input type="number" id="cost_expo" value="1.15" step="0.01" onchange="updateCharts()"></div>
+                        <div><label class="text-xs text-slate-500">Income Expo (Rec: 1.09)</label><input type="number" id="income_expo" value="1.09" step="0.01" onchange="updateCharts()"></div>
+                        <div><label class="text-xs text-slate-500">Dur Decay (Rec: 0.9973)</label><input type="number" id="dur_decay" value="0.9973" step="0.0001" onchange="updateCharts()"></div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold mb-4">Duration Decay</h3>
+                    <div class="h-[200px]">
+                        <canvas id="durationChart"></canvas>
+                    </div>
+                </div>
+                <div class="card col-span-1 md:col-span-2">
+                    <h3 class="font-bold mb-4">Cost vs Income (Raw Values)</h3>
+                    <div class="h-[350px]">
+                        <canvas id="trainingChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: MANAGERS -->
+        <section id="managers" class="section-content space-y-6">
+            <h2 class="text-2xl font-bold mb-6">Manager Leveling</h2>
+            <div class="card grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="p-4 bg-slate-900/50 rounded-xl border border-blue-500/20">
+                    <h4 class="font-bold text-blue-400 mb-2">Rare</h4>
+                    <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
+                    <input type="number" id="rare_mult" value="5" onchange="updateCharts()">
+                </div>
+                <div class="p-4 bg-slate-900/50 rounded-xl border border-purple-500/20">
+                    <h4 class="font-bold text-purple-400 mb-2">Epic</h4>
+                    <p class="text-xs text-slate-500 mb-2">Cost: Level * Mult</p>
+                    <input type="number" id="epic_mult" value="3" onchange="updateCharts()">
+                </div>
+                <div class="p-4 bg-slate-900/50 rounded-xl border border-orange-500/20">
+                    <h4 class="font-bold text-orange-400 mb-2">Legend (Fixed)</h4>
+                    <p class="text-xs text-slate-500 mb-2">Fibonacci(Level)</p>
+                    <div class="text-xs mono text-orange-300 mt-2">1, 2, 3, 5, 8, 13...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: SHOP & MONETIZATION -->
+        <section id="shop" class="section-content space-y-6">
+            <h2 class="text-2xl font-bold mb-6">Shop & Gacha Economy</h2>
+            
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                <!-- Diamond Packs -->
+                <div class="card space-y-4">
+                    <h3 class="font-bold border-b border-slate-700 pb-2">Diamond Packs Configuration</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-800 text-slate-400">
+                                <tr>
+                                    <th class="p-2">Tier</th>
+                                    <th class="p-2">Price ($)</th>
+                                    <th class="p-2">Diamonds</th>
+                                    <th class="p-2 text-right">Bonus %</th>
+                                </tr>
+                            </thead>
+                            <tbody id="diamond_packs_table" class="divide-y divide-slate-700">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="p-3 bg-slate-800 rounded text-center">
+                        <span class="text-xs text-slate-400">Base Valuation (Tier 1): 1 Diamond = </span>
+                        <span id="diamond_value_base" class="text-green-400 font-bold font-mono">...</span>
+                    </div>
+                </div>
+
+                <!-- Chest Config (Updated UI) -->
+                <div class="card space-y-4">
+                    <h3 class="font-bold border-b border-slate-700 pb-2">Chest Balancing</h3>
+                    <div class="grid grid-cols-3 gap-4">
+                        <!-- Rare -->
+                        <div class="text-center p-3 border border-blue-900/50 rounded bg-slate-800/20">
+                            <h4 class="text-sm font-bold text-blue-400 mb-2">Rare Chest</h4>
+                            <div class="grid grid-cols-2 gap-2 text-left">
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block">Cost</label>
+                                    <input type="number" id="chest_rare_cost" value="150" class="w-full text-xs">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block">Cards</label>
+                                    <input type="number" id="chest_rare_cards" value="25" class="w-full text-xs">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Epic -->
+                        <div class="text-center p-3 border border-purple-900/50 rounded bg-slate-800/20">
+                            <h4 class="text-sm font-bold text-purple-400 mb-2">Epic Chest</h4>
+                            <div class="grid grid-cols-2 gap-2 text-left">
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block">Cost</label>
+                                    <input type="number" id="chest_epic_cost" value="450" class="w-full text-xs">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block">Cards</label>
+                                    <input type="number" id="chest_epic_cards" value="8" class="w-full text-xs">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Legend -->
+                        <div class="text-center p-3 border border-orange-900/50 rounded bg-slate-800/20">
+                            <h4 class="text-sm font-bold text-orange-400 mb-2">Legend Chest</h4>
+                            <div class="grid grid-cols-2 gap-2 text-left">
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block">Cost</label>
+                                    <input type="number" id="chest_legend_cost" value="1200" class="w-full text-xs">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] text-slate-500 block">Cards</label>
+                                    <input type="number" id="chest_legend_cards" value="2" class="w-full text-xs">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Output Analysis -->
+                <div class="card xl:col-span-2">
+                    <h3 class="font-bold mb-4">Value Analysis (Based on Tier 1 Price)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-800 text-slate-400">
+                                <tr>
+                                    <th class="p-2">Chest Name</th>
+                                    <th class="p-2">Diamond Cost</th>
+                                    <th class="p-2">USD Cost (Base)</th>
+                                    <th class="p-2">$/Card</th>
+                                    <th class="p-2">Cards/$ (Value)</th>
+                                    <th class="p-2">Rec. Pricing</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shop_analysis_table" class="divide-y divide-slate-700">
+                                <!-- JS Populated -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPORT MODAL -->
+        <div id="exportModal" class="fixed inset-0 bg-black/90 hidden z-50 items-center justify-center p-4 md:p-8">
+            <div class="bg-slate-900 w-full max-w-4xl rounded-2xl border border-slate-700 flex flex-col h-[85vh]">
+                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-green-400 flex items-center gap-2">
+                        <i class="fa fa-file-code"></i> Exported Economy Balance (YAML)
+                    </h3>
+                    <button onclick="closeExport()" class="text-slate-400 hover:text-white p-2 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <textarea id="yamlOutput" class="flex-grow p-6 mono text-xs bg-slate-950 text-green-400 outline-none resize-none" readonly spellcheck="false"></textarea>
+                <div class="p-4 border-t border-slate-700 flex justify-between items-center">
+                    <p class="text-xs text-slate-500">Copy this into your game's config loader.</p>
+                    <button onclick="copyToClipboard()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold transition-colors">Copy to Clipboard</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- IMPORT MODAL -->
+        <div id="importModal" class="fixed inset-0 bg-black/90 hidden z-50 items-center justify-center p-4 md:p-8">
+            <div class="bg-slate-900 w-full max-w-2xl rounded-2xl border border-slate-700 flex flex-col h-[60vh]">
+                <div class="p-4 border-b border-slate-700 flex justify-between items-center">
+                    <h3 class="font-bold text-blue-400 flex items-center gap-2">
+                        <i class="fa fa-file-import"></i> Import YAML Config
+                    </h3>
+                    <button onclick="closeImport()" class="text-slate-400 hover:text-white p-2 transition-colors">
+                        <i class="fa fa-times text-xl"></i>
+                    </button>
+                </div>
+                <textarea id="yamlInput" class="flex-grow p-6 mono text-xs bg-slate-950 text-slate-300 outline-none resize-none" placeholder="Paste your exported YAML here..." spellcheck="false"></textarea>
+                <div class="p-4 border-t border-slate-700 flex justify-end gap-3">
+                    <button onclick="closeImport()" class="px-4 py-2 text-slate-400 hover:text-white">Cancel</button>
+                    <button onclick="parseAndImport()" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg font-bold transition-colors">Import & Update</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // --- STORAGE KEY ---
+        const STORAGE_KEY = 'sportstars_config_v2_6';
+
+        // Core State
+        const state = {
+            chapters: [
+                { id: 1, stages: 5, cap: 20, dur: 6, pulls: "6-10" },
+                { id: 2, stages: 8, cap: 60, dur: 30, pulls: "30-50" },
+                { id: 3, stages: 10, cap: 120, dur: 120, pulls: "60-80" },
+                { id: 4, stages: 10, cap: 180, dur: 120, pulls: "100-120" },
+                { id: 5, stages: 10, cap: 240, dur: 120, pulls: "150-180" },
+                { id: 6, stages: 10, cap: 300, dur: 120, pulls: "200+" }
+            ],
+            // Default Packs
+            packs: [
+                { price: 0.99, amount: 100 },
+                { price: 4.99, amount: 550 },
+                { price: 9.99, amount: 1200 },
+                { price: 19.99, amount: 2500 },
+                { price: 49.99, amount: 6500 },
+                { price: 99.99, amount: 14000 }
+            ],
+            // Simplified "Unlocked Training" model per chapter for Simulation
+            trainingBaseCosts: [10, 1000, 10000, 100000, 1000000, 5000000],
+            charts: {}
+        };
+
+        function showSection(id) {
+            document.querySelectorAll('.section-content').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            
+            const buttons = document.querySelectorAll('.nav-btn');
+            buttons.forEach(btn => {
+                if (btn.getAttribute('onclick').includes(id)) {
+                    btn.classList.add('active');
+                }
+            });
+            updateCharts();
+            updateShop();
+        }
+
+        function syncInputs(targetId, val) {
+            const el = document.getElementById(targetId);
+            if(el) {
+                el.value = val;
+                updateCharts();
+            }
+        }
+
+        function init() {
+            // Attempt load from storage first
+            loadConfig();
+
+            renderChapterInputs();
+            renderPacksTable();
+            updateCharts();
+            updateShop();
+            
+            // Listeners for auto-save on SHOP specific inputs
+            document.querySelectorAll('#shop input').forEach(i => i.addEventListener('input', () => {
+                updateShop();
+                saveConfig();
+            }));
+        }
+
+        // --- STORAGE LOGIC ---
+        function saveConfig() {
+            const config = {
+                chapters: state.chapters,
+                packs: state.packs,
+                inputs: {
+                    cost_expo: document.getElementById('cost_expo').value,
+                    income_expo: document.getElementById('income_expo').value,
+                    dur_decay: document.getElementById('dur_decay').value,
+                    stage_cash_base: document.getElementById('stage_cash_base').value,
+                    stage_cash_mult: document.getElementById('stage_cash_mult').value,
+                    stage_fame_base: document.getElementById('stage_fame_base').value,
+                    stage_fame_growth: document.getElementById('stage_fame_growth').value,
+                    rare_mult: document.getElementById('rare_mult').value,
+                    epic_mult: document.getElementById('epic_mult').value,
+                    chest_rare_cost: document.getElementById('chest_rare_cost').value,
+                    chest_rare_cards: document.getElementById('chest_rare_cards').value,
+                    chest_epic_cost: document.getElementById('chest_epic_cost').value,
+                    chest_epic_cards: document.getElementById('chest_epic_cards').value,
+                    chest_legend_cost: document.getElementById('chest_legend_cost').value,
+                    chest_legend_cards: document.getElementById('chest_legend_cards').value
+                }
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+        }
+
+        function loadConfig() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (!saved) return;
+
+            try {
+                const config = JSON.parse(saved);
+                if (config.chapters) state.chapters = config.chapters;
+                if (config.packs) state.packs = config.packs;
+                
+                if (config.inputs) {
+                    for (const [id, val] of Object.entries(config.inputs)) {
+                        const el = document.getElementById(id);
+                        if (el) el.value = val;
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load config", e);
+            }
+        }
+
+        function resetConfig() {
+            if(confirm("Reset all balancing to default values? This cannot be undone.")) {
+                localStorage.removeItem(STORAGE_KEY);
+                location.reload();
+            }
+        }
+
+        function renderChapterInputs() {
+            const container = document.getElementById('chapter-inputs');
+            container.innerHTML = ''; 
+            state.chapters.forEach((ch, i) => {
+                const div = document.createElement('div');
+                div.className = "card space-y-3 border-l-4 border-blue-500 hover:border-blue-400 transition-colors";
+                div.innerHTML = `
+                    <h4 class="font-bold flex justify-between">Chapter ${ch.id} <span class="text-xs text-slate-500 font-normal">Cap ${ch.cap}</span></h4>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="input-group">
+                            <label class="text-[10px] uppercase font-bold text-slate-500">Stages</label>
+                            <input type="number" onchange="state.chapters[${i}].stages=parseInt(this.value);updateCharts();saveConfig()" value="${ch.stages}">
+                        </div>
+                        <div class="input-group">
+                            <label class="text-[10px] uppercase font-bold text-slate-500">Lvl Cap</label>
+                            <input type="number" onchange="state.chapters[${i}].cap=parseInt(this.value);updateCharts();saveConfig()" value="${ch.cap}">
+                        </div>
+                        <div class="input-group col-span-2">
+                            <label class="text-[10px] uppercase font-bold text-slate-500">Base Dur (s)</label>
+                            <input type="number" onchange="state.chapters[${i}].dur=parseInt(this.value);updateCharts();saveConfig()" value="${ch.dur}">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+        
+        function renderPacksTable() {
+            const tbody = document.getElementById('diamond_packs_table');
+            tbody.innerHTML = '';
+            
+            const baseRatio = state.packs[0].amount / state.packs[0].price;
+
+            state.packs.forEach((p, i) => {
+                const currentRatio = p.amount / p.price;
+                const bonus = ((currentRatio - baseRatio) / baseRatio) * 100;
+                
+                const row = `
+                    <tr>
+                        <td class="p-2 text-slate-300 font-bold">Tier ${i + 1}</td>
+                        <td class="p-2"><input type="number" step="0.01" class="w-20 bg-slate-900 border border-slate-700 rounded px-1" value="${p.price}" onchange="updatePack(${i}, 'price', this.value)"></td>
+                        <td class="p-2"><input type="number" class="w-20 bg-slate-900 border border-slate-700 rounded px-1" value="${p.amount}" onchange="updatePack(${i}, 'amount', this.value)"></td>
+                        <td class="p-2 text-right text-green-400 font-mono text-[10px]">${i === 0 ? '-' : '+' + bonus.toFixed(1) + '%'}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+            });
+        }
+        
+        function updatePack(index, field, value) {
+            state.packs[index][field] = parseFloat(value);
+            renderPacksTable(); // Re-render to update bonus calcs
+            updateShop(); // Re-calc valuations
+            saveConfig();
+        }
+
+        // --- SIMULATION LOGIC ---
+        function runSimulation(costExpo, stageCashBase, stageCashMult) {
+            const tbody = document.getElementById('sim-table');
+            tbody.innerHTML = '';
+            
+            let globalStageIdx = 0;
+            let currentLevel = 0; // The level player starts the chapter at
+
+            state.chapters.forEach((ch, chIdx) => {
+                // 1. Calculate Buying Power (Incentive Check)
+                // We use the MOST EXPENSIVE unlocked training as the benchmark for "buying levels"
+                const bestTrainingBase = state.trainingBaseCosts[chIdx] || state.trainingBaseCosts[state.trainingBaseCosts.length-1];
+                
+                // Cost to buy 1 level at the START of this chapter (currentLevel)
+                const costOfOneLevel = bestTrainingBase * Math.pow(costExpo, currentLevel);
+                
+                // Average Stage Reward for this chapter
+                const firstStageReward = stageCashBase * Math.pow(stageCashMult, globalStageIdx);
+                const levelsBuyable = firstStageReward / costOfOneLevel;
+                
+                // 2. Calculate Total Chapter Metrics
+                let totalChapterCost = 0;
+                // Sum cost for ALL unlocked trainings to reach new cap
+                for (let t = 0; t <= chIdx; t++) {
+                    const base = state.trainingBaseCosts[t] || 10;
+                    for (let l = currentLevel; l < ch.cap; l++) {
+                        totalChapterCost += base * Math.pow(costExpo, l);
+                    }
+                }
+                
+                let totalChapterRewards = 0;
+                for (let s = 0; s < ch.stages; s++) {
+                    const reward = stageCashBase * Math.pow(stageCashMult, globalStageIdx);
+                    totalChapterRewards += reward;
+                    globalStageIdx++;
+                }
+
+                // 3. Status
+                const isSurplus = totalChapterRewards >= totalChapterCost;
+                const statusHtml = isSurplus 
+                    ? `<span class="text-green-400 font-bold"><i class="fa fa-check-circle"></i> Surplus</span>`
+                    : `<span class="text-red-400 font-bold"><i class="fa fa-clock"></i> Deficit</span>`;
+                
+                // 4. Color Code Buying Power
+                let powerColor = "text-slate-400";
+                if (levelsBuyable > 5) powerColor = "text-green-400 font-bold";
+                else if (levelsBuyable > 1) powerColor = "text-yellow-400 font-bold";
+                else powerColor = "text-red-400 font-bold";
+
+                const row = `
+                    <tr class="hover:bg-slate-800/50">
+                        <td class="p-3 border-b border-slate-700 font-bold">Ch ${ch.id}</td>
+                        <td class="p-3 border-b border-slate-700 text-slate-300 font-mono">${totalChapterCost.toExponential(2)}</td>
+                        <td class="p-3 border-b border-slate-700 font-mono ${powerColor}">${levelsBuyable.toFixed(2)}</td>
+                        <td class="p-3 border-b border-slate-700 text-xs">${statusHtml}</td>
+                    </tr>
+                `;
+                tbody.innerHTML += row;
+                
+                // Update level for next loop
+                currentLevel = ch.cap;
+            });
+        }
+
+        // --- SHOP LOGIC ---
+        function updateShop() {
+            // Use Tier 1 as the Base Valuation
+            const basePack = state.packs[0];
+            const valPerDiamond = basePack.price / basePack.amount;
+
+            document.getElementById('diamond_value_base').innerText = `$${valPerDiamond.toFixed(4)}`;
+
+            const chests = [
+                { name: "Rare", costId: 'chest_rare_cost', cardId: 'chest_rare_cards' },
+                { name: "Epic", costId: 'chest_epic_cost', cardId: 'chest_epic_cards' },
+                { name: "Legend", costId: 'chest_legend_cost', cardId: 'chest_legend_cards' }
+            ];
+
+            const tbody = document.getElementById('shop_analysis_table');
+            tbody.innerHTML = '';
+
+            chests.forEach(c => {
+                const cost = parseFloat(document.getElementById(c.costId).value);
+                const cards = parseFloat(document.getElementById(c.cardId).value);
+                const usdCost = cost * valPerDiamond;
+                const dollarPerCard = usdCost / cards;
+                const cardsPerDollar = cards / usdCost;
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="p-2 font-bold ${c.name === 'Legend' ? 'text-orange-400' : 'text-slate-200'}">${c.name}</td>
+                        <td class="p-2 text-mono text-blue-300 font-bold">${cost} 💎</td>
+                        <td class="p-2 text-mono">$${usdCost.toFixed(2)}</td>
+                        <td class="p-2 text-mono font-bold">$${dollarPerCard.toFixed(2)}</td>
+                        <td class="p-2 text-mono text-green-400 font-bold">${cardsPerDollar.toFixed(2)}</td>
+                        <td class="p-2 text-slate-500 italic">Target: $${(usdCost * 0.9).toFixed(2)} - $${(usdCost * 1.1).toFixed(2)}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateCharts() {
+            const costExpo = parseFloat(document.getElementById('cost_expo').value) || 1.15;
+            const incomeExpo = parseFloat(document.getElementById('income_expo').value) || 1.09;
+            const durDecay = parseFloat(document.getElementById('dur_decay').value) || 0.9973;
+            
+            const stageCashBase = parseFloat(document.getElementById('stage_cash_base').value) || 1200;
+            const stageCashMult = parseFloat(document.getElementById('stage_cash_mult').value) || 2.5; // Updated default
+            const stageFameBase = parseFloat(document.getElementById('stage_fame_base').value) || 100;
+            const stageFameGrowth = parseFloat(document.getElementById('stage_fame_growth').value) || 45;
+
+            // Health Check
+            const healthEl = document.getElementById('health-status');
+            if (incomeExpo >= costExpo) {
+                healthEl.className = "px-4 py-2 rounded-full text-xs font-bold bg-red-900 text-red-300 border border-red-500 warning-pulse";
+                healthEl.innerHTML = "CRITICAL: INCOME > COST";
+            } else {
+                healthEl.className = "px-4 py-2 rounded-full text-xs font-bold bg-green-900 text-green-300 border border-green-500";
+                healthEl.innerHTML = "STATUS: HEALTHY";
+            }
+
+            // Run Simulation
+            runSimulation(costExpo, stageCashBase, stageCashMult);
+
+            // Chart Data Generation
+            const trLabels = Array.from({length: 61}, (_, i) => i * 5); 
+            const trCosts = trLabels.map(l => 10 * Math.pow(costExpo, Math.max(0, l-1)));
+            const baseDur = 7; 
+            const trIncomesPerSec = trLabels.map(l => {
+                const inc = 40 * Math.pow(incomeExpo, Math.max(0, l-1));
+                const dur = baseDur * Math.pow(durDecay, Math.max(0, l-1));
+                return inc / Math.max(0.1, dur);
+            });
+            const timeToUpgrade = trCosts.map((c, i) => c / trIncomesPerSec[i]);
+
+            renderLineChart('trainingChart', trLabels, [
+                { label: 'Upgrade Cost', data: trCosts, color: '#ef4444' },
+                { label: 'Income / Sec', data: trIncomesPerSec, color: '#22c55e' }
+            ], true);
+
+            renderLineChart('timeToUpgradeChart', trLabels, [
+                { label: 'Seconds to Afford Next Level', data: timeToUpgrade, color: '#eab308' }
+            ], true);
+
+            const durValues = trLabels.map(l => 100 * Math.pow(durDecay, Math.max(0, l-1)));
+            renderLineChart('durationChart', trLabels, [
+                { label: '% of Level 1 Duration', data: durValues, color: '#3b82f6' }
+            ], false);
+
+            // Fame Projection with Inputs
+            let globalIdx = 0;
+            let totalFame = 0;
+            const fameLabels = [];
+            const fameValues = [];
+            state.chapters.forEach(ch => {
+                for(let s=0; s<ch.stages; s++) {
+                    totalFame += stageFameBase + (globalIdx * stageFameGrowth);
+                    fameLabels.push(globalIdx);
+                    fameValues.push(totalFame);
+                    globalIdx++;
+                }
+            });
+            renderBarChart('fameChart', fameLabels, fameValues);
+
+            // Save state
+            saveConfig();
+        }
+
+        function renderLineChart(id, labels, datasets, log) {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (state.charts[id]) state.charts[id].destroy();
+            state.charts[id] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: datasets.map(d => ({
+                        label: d.label, data: d.data, borderColor: d.color, tension: 0.3, pointRadius: 0, borderWidth: 2
+                    }))
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { 
+                            type: log ? 'logarithmic' : 'linear', 
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        }, 
+                        x: { 
+                            grid: { display: false },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        } 
+                    },
+                    plugins: { legend: { labels: { color: '#94a3b8', boxWidth: 12 } } }
+                }
+            });
+        }
+
+        function renderBarChart(id, labels, data) {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (state.charts[id]) state.charts[id].destroy();
+            state.charts[id] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{ label: 'Cumulative Fame', data: data, backgroundColor: '#3b82f6', borderRadius: 4 }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { 
+                        y: { 
+                            grid: { color: '#334155' },
+                            ticks: { color: '#94a3b8', font: { size: 10 } }
+                        }, 
+                        x: { 
+                            display: false 
+                        } 
+                    },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+
+        // --- EXPORT/IMPORT LOGIC ---
+        function exportYAML() {
+            const yaml = `
+# Economy Master Document - SportStars (Pro Revised v2.6)
+project_name: SportStars
+version: 2.6.0
+
+balancing_curves:
+  training_upgrade_cost: "BaseCost * (${document.getElementById('cost_expo').value} ^ CurrentLevelIndex)"
+  collector_income: "BaseIncome * (${document.getElementById('income_expo').value} ^ CurrentLevelIndex)"
+  collector_duration: "ChapterBaseDuration * (${document.getElementById('dur_decay').value} ^ CurrentLevelIndex)"
+  stage_reward_cash: "${document.getElementById('stage_cash_base').value} * (${document.getElementById('stage_cash_mult').value} ^ GlobalStageIndex)"
+  stage_reward_fame: "${document.getElementById('stage_fame_base').value} + (GlobalStageIndex * ${document.getElementById('stage_fame_growth').value})"
+
+shop:
+  diamond_packs:
+${state.packs.map(p => `    - { price: ${p.price}, amount: ${p.amount} }`).join('\n')}
+  chests:
+    rare: { cost: ${document.getElementById('chest_rare_cost').value}, cards: ${document.getElementById('chest_rare_cards').value} }
+    epic: { cost: ${document.getElementById('chest_epic_cost').value}, cards: ${document.getElementById('chest_epic_cards').value} }
+    legend: { cost: ${document.getElementById('chest_legend_cost').value}, cards: ${document.getElementById('chest_legend_cards').value} }
+
+chapters:
+${state.chapters.map(ch => `  ch_${ch.id}: { stages: ${ch.stages}, cap: ${ch.cap}, duration: ${ch.dur} }`).join('\n')}
+
+manager_upgrades:
+  rare: "Level * ${document.getElementById('rare_mult').value}"
+  epic: "Level * ${document.getElementById('epic_mult').value}"
+  legend: "Fibonacci(CurrentLevelIndex)"
+`;
+            document.getElementById('yamlOutput').value = yaml.trim();
+            document.getElementById('exportModal').classList.remove('hidden');
+            document.getElementById('exportModal').classList.add('flex');
+        }
+
+        function closeExport() {
+            document.getElementById('exportModal').classList.add('hidden');
+            document.getElementById('exportModal').classList.remove('flex');
+        }
+        
+        function openImport() {
+            document.getElementById('importModal').classList.remove('hidden');
+            document.getElementById('importModal').classList.add('flex');
+        }
+
+        function closeImport() {
+            document.getElementById('importModal').classList.add('hidden');
+            document.getElementById('importModal').classList.remove('flex');
+        }
+
+        function parseAndImport() {
+            const text = document.getElementById('yamlInput').value;
+            
+            // Regex Parsers
+            const costExpoMatch = text.match(/training_upgrade_cost:.*BaseCost \* \((\d+\.?\d*)/);
+            const incomeExpoMatch = text.match(/collector_income:.*BaseIncome \* \((\d+\.?\d*)/);
+            const durDecayMatch = text.match(/collector_duration:.*ChapterBaseDuration \* \((\d+\.?\d*)/);
+            
+            // Stage Rewards
+            const cashBaseMatch = text.match(/stage_reward_cash: "(\d+) \*/);
+            const cashMultMatch = text.match(/stage_reward_cash:.*\* \((\d+\.?\d*)/);
+            const fameBaseMatch = text.match(/stage_reward_fame: "(\d+) \+/);
+            const fameGrowthMatch = text.match(/stage_reward_fame:.*\* (\d+)\)"/);
+
+            const rareMatch = text.match(/rare:.*\* (\d+)/);
+            const epicMatch = text.match(/epic:.*\* (\d+)/);
+
+            if (costExpoMatch) syncInputs('cost_expo', costExpoMatch[1]);
+            if (incomeExpoMatch) syncInputs('income_expo', incomeExpoMatch[1]);
+            if (durDecayMatch) syncInputs('dur_decay', durDecayMatch[1]);
+            
+            if (cashBaseMatch) document.getElementById('stage_cash_base').value = cashBaseMatch[1];
+            if (cashMultMatch) document.getElementById('stage_cash_mult').value = cashMultMatch[1];
+            if (fameBaseMatch) document.getElementById('stage_fame_base').value = fameBaseMatch[1];
+            if (fameGrowthMatch) document.getElementById('stage_fame_growth').value = fameGrowthMatch[1];
+
+            if (rareMatch) document.getElementById('rare_mult').value = rareMatch[1];
+            if (epicMatch) document.getElementById('epic_mult').value = epicMatch[1];
+            
+            // Parse Chests
+            const rareChest = text.match(/rare: \{ cost: (\d+), cards: (\d+) \}/);
+            const epicChest = text.match(/epic: \{ cost: (\d+), cards: (\d+) \}/);
+            const legendChest = text.match(/legend: \{ cost: (\d+), cards: (\d+) \}/);
+            
+            if (rareChest) { document.getElementById('chest_rare_cost').value = rareChest[1]; document.getElementById('chest_rare_cards').value = rareChest[2]; }
+            if (epicChest) { document.getElementById('chest_epic_cost').value = epicChest[1]; document.getElementById('chest_epic_cards').value = epicChest[2]; }
+            if (legendChest) { document.getElementById('chest_legend_cost').value = legendChest[1]; document.getElementById('chest_legend_cards').value = legendChest[2]; }
+
+            // Parse Chapters
+            const chapterRegex = /ch_(\d+): \{ stages: (\d+), cap: (\d+), duration: (\d+) \}/g;
+            let match;
+            const newChapters = [];
+            while ((match = chapterRegex.exec(text)) !== null) {
+                newChapters.push({
+                    id: parseInt(match[1]),
+                    stages: parseInt(match[2]),
+                    cap: parseInt(match[3]),
+                    dur: parseInt(match[4]),
+                    pulls: "Calculated"
+                });
+            }
+            if (newChapters.length > 0) {
+                state.chapters = newChapters;
+                renderChapterInputs();
+            }
+            
+            // Parse Packs
+            const packRegex = /\{ price: (\d+\.?\d*), amount: (\d+) \}/g;
+            let packMatch;
+            const newPacks = [];
+            while ((packMatch = packRegex.exec(text)) !== null) {
+                newPacks.push({
+                    price: parseFloat(packMatch[1]),
+                    amount: parseInt(packMatch[2])
+                });
+            }
+            if (newPacks.length > 0) {
+                state.packs = newPacks;
+                renderPacksTable();
+            }
+
+            updateCharts();
+            updateShop();
+            saveConfig(); // Save after import
+            closeImport();
+            alert("Configuration Imported Successfully!");
+        }
+
+        function copyToClipboard() {
+            const el = document.getElementById('yamlOutput');
+            el.select();
+            document.execCommand('copy');
+            const btn = event.currentTarget;
+            btn.innerText = "COPIED!";
+            setTimeout(() => { btn.innerText = "Copy to Clipboard"; }, 2000);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
