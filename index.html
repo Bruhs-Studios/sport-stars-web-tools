@@ -1,0 +1,83 @@
+---
+layout: default
+title: Home
+---
+
+<style>
+  .tool-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+  .tool-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 1.5rem;
+    transition: transform 0.2s, border-color 0.2s;
+    text-decoration: none !important;
+    display: block;
+  }
+  .tool-card:hover {
+    transform: translateY(-2px);
+    border-color: #3b82f6;
+    background: rgba(255,255,255,0.08);
+  }
+  .tool-title {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+  .tool-desc {
+    font-size: 0.9rem;
+    color: #aaa;
+    display: block;
+  }
+  .status-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 0.8rem;
+  }
+  .status-stable { background: #064e3b; color: #6ee7b7; border: 1px solid #059669; }
+  .status-beta { background: #451a03; color: #fdba74; border: 1px solid #d97706; }
+</style>
+
+<h2>Available Tools</h2>
+
+<div class="tool-grid">
+  
+  <!-- SportStars Economy Suite -->
+  <a href="tools/economy_suite.html" class="tool-card">
+    <span class="status-tag status-stable">v2.6 Stable</span>
+    <span class="tool-title">Economy Master Suite</span>
+    <span class="tool-desc">
+      Full-stack economy simulation for SportStars. Includes progression analysis, monetization valuation, and balance visualization.
+    </span>
+  </a>
+
+  <!-- Future Tool Placeholder -->
+  <a href="#" class="tool-card" style="opacity: 0.5; cursor: not-allowed;">
+    <span class="status-tag status-beta">Coming Soon</span>
+    <span class="tool-title">Asset Naming Validator</span>
+    <span class="tool-desc">
+      Automated checker for Unity asset naming conventions and directory structures.
+    </span>
+  </a>
+
+</div>
+
+<hr />
+
+<h3>Project Links</h3>
+<ul>
+  <li><a href="#">Game Design Document (GDD)</a></li>
+  <li><a href="#">Art Asset Pipeline</a></li>
+  <li><a href="#">Jira Board</a></li>
+</ul>
