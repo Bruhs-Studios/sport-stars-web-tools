@@ -1,0 +1,10 @@
+title: SportStars Tooling Hub
+description: Internal game design & economy balancing tools.
+theme: jekyll-theme-slate
+
+# Ensure tools are treated as raw files and not wrapped in the theme layout
+defaults:
+  - scope:
+      path: "tools"
+    values:
+      layout: null
